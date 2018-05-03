@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>Marko's Chat</title>
+    <meta name="description" content="Marko's Chat">
+    <link id="favicon" rel="icon" href="https://glitch.com/edit/favicon-app.ico" type="image/x-icon">
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link href="https://fonts.googleapis.com/css?family=Open+Sans" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="mQuerries.css">
+    <script src="/socket.io/socket.io.js"></script>
+  </head>
+  <body class="flex vert j_center">
+      <style>
+        body{
+          min-height: 100vh;
+          /*background-color: rgba(200,200,255, 0.9);*/
+          background-image: url('https://cdn.glitch.com/a2eec912-3cca-419e-908b-6e26f3a8dee3%2Fel-castillo-female-hand.jpg?1525251996369');
+          background-repeat: no-repeat;
+          background-position: center center;
+          background-size: cover;
+        }
+        form{
+          min-height: 150px;
+          
+        }
+        input[type="text"], input[type="password"]{
+          text-align: center;
+          margin: 0;
+          padding-left: 1px;
+        }
+        input, button{
+          /*-box-shadow: 0px 0px 12px 2px gray;*/
+        }
+      </style>
+      
+      <!--div id="main"></div-->
+      <button id="getPublic">
+        use public room
+      </button>
+      <br />
+      <form id="loginForm" class="flex vert">
+        <input type="text" name="userName" placeholder="username"/>
+        <br />
+        <input type="password" name="pass" placeholder="secret"/>
+        <br />
+        <input type="submit" value="login" />
+      </form>
+      <!--div id="inputDiv" class="full">
+          just a sec
+      </div-->
+      
+    
+      <!--script type="text/javascript" src="/bundle.js"></script-->
+    <script>
+      document.querySelector('#loginForm').addEventListener('submit', ev=>{
+        ev.preventDefault()
+        const userName = document.querySelector('#loginForm').userName.value
+        const pass = document.querySelector('#loginForm').pass.value
+        
+        fetch('/login', {
+                  method: 'POST', 
+                  credentials: 'include',
+                  body: JSON.stringify({userName, pass}),
+                  headers: new Headers({
+                    'Content-Type': 'application/json'
+                  })
+        })
+        .then(response=>{
+          console.log(response) 
+          if (response.ok) location.pathname = '/'
+          else console.error('not authorized')
+          
+        }) //)response.json())
+        /*.then(response=>{
+          //console.log('loggedin?', response)
+        })*/
+      })
+      document.querySelector('#getPublic').addEventListener('click', ev=>{
+          localStorage.setItem('lastRoom', 'pub')
+          open('/pub','_self')
+          
+      })
+    </script>
+  </body>
+</html>

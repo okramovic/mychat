@@ -1,0 +1,32 @@
+add sending files
+
+
+send push notifications about new messages
+
+improve to whom sockets send new messages
+change message input field to textarea (so it has more lines)
+
+
+
+add: componentWillUnmount: function () {
+    socket.removeListener('data', this.handleData);
+  },
+
+  
+- - - - - - - - - - - - - - - - - - - - - - - -  
+done
+- react app components
+  navbar with 3 chat rooms
+  chat room feed
+  input - text
+  //input file
+  
+- add some gate:
+    session?
+- use geametric cave paintings as background instead of space?
+- add Vlads room and allowRoomAccess mdlwr
+- nicer image positioning
+- prevent (short) links to be understood as local 
+      = add http:// in href attribute for those
+- display warning 'not allowed'
+- intelligent scrolling to last message

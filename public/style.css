@@ -1,0 +1,262 @@
+* {
+  font-family: 'Open Sans', sans-serif;
+}
+*:active, *:focus, *:hover{
+  outline: none;
+}
+
+body{
+  margin: 0px;
+  min-height: 100vh;
+  width: 100vw;
+}
+
+form{
+  padding: 0 0.33em;
+}
+
+#app{
+  /*padding: 0em 1em;
+  width: 95vw;*/
+  margin: 0 auto;
+  min-height: 100vh;
+}
+input[type="text"], input[type="password"]{
+  width: 65%;
+  height: 45px;
+  border: none;
+  font-size: 20px;
+  margin: 0.5em;
+  padding-left: 0.25em;
+  border-radius: 3px;
+}
+button, input[type="submit"]{
+  height: 45px;
+  border: 2px solid black;
+  border-radius: 3px;
+  /*color: dodgerblue;*/
+  font-size: 20px;
+  cursor: pointer;
+}
+button:disabled, [type="submit"]:disabled{
+  color: rgb(155, 155, 155);
+  border-color: rgb(155, 155, 155);
+  cursor: default;
+}
+.white{
+  color: white;
+  /*-text-shadow: 1px 1px 3px yellow;*/
+}
+.noMargin{
+  margin: 0;
+}
+
+#roomsRow{
+  min-height: 45px;
+  /*-width: 100%;*/
+  padding: 0.5em 0.5em;
+  background-color: rgba(200,200,255, 0.9);
+}
+#roomsRow > .roomButton{
+  font-size: 25px;
+  /* 20% or so should be reserved for < and > buttons to see another rooms 
+  width: 25%;*/
+  margin: 0 0.33em;
+}
+#roomsRow > .roomButton:last-of-type{
+  /*background-color: red;
+  margin-right: 0.33em;*/
+}
+#roomsRow > .roomButton.buttonActive{
+  color: rgba(30, 144, 255,1); /* dodgerblue */
+  border-color: rgba(30, 144, 255,1);
+}
+#roomsRow > .roomButton.buttonInactive{
+  color: rgba(30, 144, 255, .5);
+  border-color: rgb(191, 191, 191);
+}
+
+
+#input{
+  position: fixed;
+  left: 0;
+  z-index: 2;
+  height: 70px;
+  width: 100%;
+  background-color: rgba(200,200,255, 0.9);
+}
+#input.bottom{
+  bottom: 0;
+}
+#input.middle{
+  top: calc((100vh /2) - 35px);
+}
+/*#input > input[type="text"] {
+}*/
+
+#input > .userName{
+  /*-font-size: 20px;
+  -margin: 0.5em;
+  padding-left: 0.25em;*/
+  max-width: 25%;
+  overflow: hidden;
+}
+
+input[type="text"]::placeholder, input[type="password"]::placeholder {
+  font-size: 17px;
+  color: rgba(150,150,150,1);
+  text-decoration: underline;
+  font-style: italic;
+  text-align: center;
+  padding-left: 0;
+}
+
+input[type="submit"]{
+  /*width: 30%;*/
+  
+  max-width: 100px;
+  min-width: 30px;
+}
+
+.full{
+  width: 100%;
+}
+.flex{
+  display: flex;
+  align-items: center;
+}
+.j_center{
+  justify-content: center;
+}
+.vert{
+  flex-direction: column;
+}
+.between{
+  justify-content: space-between;
+}
+.around{
+  justify-content: space-around;
+}
+.evenly{
+  justify-content: space-evenly;
+}
+.overFlowHoriz{
+  overflow-x: scroll;
+}
+.hidden{
+  display: none;
+}
+.promptUser{
+  color: red;
+  background-color: gray;
+  width: 100vw;
+  z-index: 2;
+  position: fixed;
+  left: 0;
+  top: 33vh;
+}
+
+#blocker{
+  position: fixed;
+  top: 0;
+  left: 0;
+  background-color: rgba(200,200,200,.7);
+  width: 100vw;
+  height: 100vh;
+  z-index: 1;
+}
+/*#blocker{
+  display: block;
+}*/
+#warning{
+  width: 100vw;
+  margin: auto;
+  color: red;
+  font-size: 25px;
+  padding: 10px;
+  position: fixed;
+  
+  top: calc((100vh/2) - 35px);
+  background-color: rgba(255,255,255, .7);
+}
+#warning.warnActive{
+  left: 0;
+  transition: left .33s;
+}
+#warning.warnHidden{
+  left: -120vw;
+  transition: left .25s;
+}
+.alignCenter{
+  text-align: center;
+}
+#chatContainer{
+  /*display: flex;
+  flex-direction: column;
+  align-items: center;*/
+}
+#chatContainer h1.chatMsg:first-of-type{
+  font-size: 25px;
+  display: flex;
+  justify-content: center;
+}
+.chatMsg{
+  font-size: 17px;
+  min-width: 200px;
+  max-width: 92vw;
+  margin: .3em auto .3em;
+  display: flex;
+  /*flex-wrap: wrap;*/
+  align-items: flex-start;
+}
+.chatMsg > span.msgAuthor{
+  font-style: italic;
+  color: rgba(130,130,130,1);
+  white-space: nowrap;
+  /*-text-overflow: ellipsis;
+  -overflow: hidden;*/
+}
+.chatMsg > span.msgText, .chatMsg > a.msgText{
+  width: 100%;
+  margin-left: .7em;
+  overflow-wrap: break-word;
+  word-wrap: break-word;
+  word-break: break-word;
+  hyphens: auto;
+  /*word-wrap: break-word;
+  word-break: break-all;
+  hyphens: auto;*/
+  /* https://css-tricks.com/snippets/css/prevent-long-urls-from-breaking-out-of-container/ */
+}
+.chatMsg a{
+  overflow-wrap: break-word;
+  word-wrap: break-word;
+  word-break: break-word;
+  hyphens: auto;
+  overflow: hidden;
+}
+.chatMsg a.msgText{
+  /*-max-width: 80vw;*/
+}
+
+.chatMsg img/*a > img.msgImgPreview*/
+{
+  display: block;
+  /*-max-height: 400px;
+  -max-width: 60vw;*/
+  /*width: auto;*/
+  max-width: 100%;
+  margin: auto;
+  /*-margin-left: 1em;*/
+  margin-top: .35em;
+}
+.chatMsg span.imgURL{
+  font-size: 12px;
+}
+.withImage{
+  background-image: url('https://cdn.glitch.com/a2eec912-3cca-419e-908b-6e26f3a8dee3%2Fel-castillo-female-hand.jpg?1525251996369');
+  /*background-image: url('https://cdn.glitch.com/a2eec912-3cca-419e-908b-6e26f3a8dee3%2Fspace-1.jpg?1525102541809'); */
+  background-repeat: no-repeat;
+  background-position: center center;
+  background-size: cover;
+}
