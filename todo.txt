@@ -2,14 +2,21 @@
 
 send push notifications about new messages
 
+
 improve to whom sockets send new messages
+
+
+render chatrooms on server 
+    - to learn new thing
+    - to save memory in browser (all those fetched files when changing rooms) ?
+
 
 
 add: componentWillUnmount: function () {
     socket.removeListener('data', this.handleData);
   },
 
-  
+
 - - - - - - - - - - - - - - - - - - - - - - - -  
 done
 - react app components
@@ -30,6 +37,7 @@ done
 - change message input field to textarea (so it has more lines)
 - add req.session gate on file upload API
 - add sending files
+- readd send msg on Enter, shift+enter makes new line
 
 
 

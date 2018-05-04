@@ -1,3 +1,5 @@
+'use strict'
+
 const React = require('react');
 const ReactDOM = require('react-dom');
 
@@ -15,7 +17,7 @@ const Rooms = require('./components/Rooms'),
 
 let socket;
 
-
+//alert('hi')
 /*socket.on('serverMsg', msg =>{
     console.log('serverMsg', msg)
 })*/
@@ -29,6 +31,7 @@ class Input extends React.Component{
     //this.clickHandler = this.clickHandler.bind(this)
     this.textChangeHandler = this.textChangeHandler.bind(this)
     this.submitHandler = this.submitHandler.bind(this)
+    this.keyPressHandler = this.keyPressHandler.bind(this)
     
     this.state={
       type: this.props.type,
@@ -47,9 +50,18 @@ class Input extends React.Component{
             rows: rows < 1 ? 1 : rows
     })
   }
+  keyPressHandler(ev){
+    //console.log('keypressed', ev.key, ev.target)
+    //console.log(ev, ev.shiftKey)
+    if (ev.key == 'Enter' && !ev.shiftKey){
+        //console.log('should submit form')
+        this.submitHandler()
+    }
+  }
   submitHandler(ev){
     // input validation
-        ev.preventDefault()
+        if (ev) ev.preventDefault()
+    
         if(!this.state.inputVal) return;// alert('need input')
         if (this.props.type=="userName" && this.state.inputVal.toString().length>10)
             return alert('too long name, must be under 10 characters')
@@ -74,9 +86,10 @@ class Input extends React.Component{
         //  <input type="file" onChange={(ev)=>this.props.fileHandler(ev)} style={{display: this.props.room=='me' ? 'block' : 'none'}}/>
         // <input type="submit" style={{display: this.props.fileReady ? 'block' : 'none' }} value="file!" />
         return(
-          <form id="input" className={className}  
+          <form id="input" className={className}  onKeyPress={this.keyPressHandler}
                 style={{height: (this.state.rows*25 + 20)*1.3 + 'px',
                        bottom: this.props.makeBottomSpace? '60px' : '0' }}>
+            
             <div className="icon" onClick={()=>this.props.openFileForm()}>📁</div> 
             <textarea id="textInput" name="text" onChange={this.textChangeHandler} 
                    type="text" placeholder={"type here"} autoComplete="off" 
@@ -95,7 +108,7 @@ class Input extends React.Component{
         return(
         <form id="input" className={className} onSubmit={this.submitHandler}>
           <input id="textInput" name="text" onChange={this.textChangeHandler} 
-                 type="text" placeholder="whats your name?" autocomplete="on"
+                 type="text" placeholder="whats your name?" autoComplete="on"
                  style={{textAlign: 'center'}}
                  value={this.state.inputVal} />
           <input type="submit" onClick={this.submitHandler} 
@@ -120,7 +133,7 @@ class FileUploadForm extends React.Component{
       <form ref="some-random-text" onSubmit={ev=>this.props.fileSubmitHandler(ev)} 
              className="full flex evenly"
              style={{width:'100%'}}>
-             <div onClick={this.props.openFileForm} style={{}}>←</div>
+             <div onClick={this.props.openFileForm} className="icon" style={{}}>←</div>
              <input type="file" name="uploadFile" />
              <input type="submit" value="Upload!" />
       </form>
@@ -140,10 +153,11 @@ class App extends React.Component{
     const userName = localStorage.getItem('userName')
     const lastRoom = localStorage.getItem('lastRoom')
     
-    socket = io('https://snapdrop.glitch.me?room='+lastRoom)
-    //socket = io('https://snapdrop.glitch.me',{path:'/' + lastRoom})
-    console.log('socket', socket)
-    
+    if (lastRoom) {
+      window.socket = io('https://snapdrop.glitch.me?room='+lastRoom)
+      //socket = io('https://snapdrop.glitch.me',{path:'/' + lastRoom})
+      console.log('socket', window.socket)
+    }
     
     this.messageHandler = this.messageHandler.bind(this)
     this.userNameHandler = this.userNameHandler.bind(this)
@@ -152,6 +166,7 @@ class App extends React.Component{
     this.openFileForm = this.openFileForm.bind(this)
     this.fileSubmitHandler = this.fileSubmitHandler.bind(this)
     this.displayWarning = this.displayWarning.bind(this)
+    //this.refreshSocketListeners = this.refreshSocketListeners.bind(this)
     
     
     
@@ -181,22 +196,11 @@ class App extends React.Component{
   }
   componentDidMount(){
     //console.log('mounted state', this.state)
-    if (this.state.activeRoom) this.getRoomContent(this.state.activeRoom)
+    if (this.state.activeRoom) {
+      this.getRoomContent(this.state.activeRoom)
+      refreshSocketListeners.call(this)
+    }
     
-    
-    
-    socket.on('msg', msg=>{
-        console.log('new socket msg', msg)
-        if (this.state.activeRoom === msg.room) {
-          
-            
-          
-            this.setState((prev, props)=>{
-                prev.messages.push(msg)
-                return {messages: prev.messages, shouldScroll: true}
-            })
-        } else spawnNotification(`New msg in room ${msg.room.toUpperCase()}`, `~ ${msg.from} ~ wrote something`)
-    })
   }
   
   userNameHandler(string){
@@ -205,7 +209,7 @@ class App extends React.Component{
   }
   messageHandler(text){
     //console.log('new msg inputed', text, Date.now() )
-    socket.emit('msg',{ room: this.state.activeRoom, from: this.state.userName, text:text.toString().trim(), timeStamp: Date.now()} )
+    window.socket.emit('msg',{ room: this.state.activeRoom, from: this.state.userName, text:text.toString().trim(), timeStamp: Date.now()} )
   }
   fileHandler(ev){
 
@@ -291,25 +295,33 @@ class App extends React.Component{
           
             this.displayWarning('~ not for your eyes ~')
             throw new Error('not successful');
-        }
-        else {
-          setTimeout(()=>this.setState({ warning:null }),250)
-          return res.json()
+          
+        }  else {
+            setTimeout(()=>this.setState({ warning:null }),250)
+            return res.json()
         }
       }).then(res=>{
           //console.log(res)
+          if (window.socket) {
+            window.socket.emit('leave', this.state.activeRoom)
+            window.socket.disconnect()
+          }
+        
           this.setState({
                          messages:res.chat,
                          activeRoom: res.roomName,
                          currentRoomStartDate: res.roomStarted, 
-                         shouldScroll: true
-              },()=>{ 
-                saveLastRoom(res.roomName)
-                //console.log('app state.messages',this.state.activeRoom, this.state.messages)
+                         shouldScroll: true 
           })
-      }).catch(er=>{
-        console.error(er)
-        //this.setState({warning: 'Not for your eyes...'})
+            
+            
+          saveLastRoom(res.roomName)
+          window.socket = io('https://snapdrop.glitch.me?room='+res.roomName)
+          refreshSocketListeners.call(this)
+          
+      }).catch(er =>{
+          console.error(er)
+          //this.setState({warning: 'Not for your eyes...'})
       })
   }
   
@@ -348,7 +360,8 @@ class App extends React.Component{
       this.setState({warning: msg, shouldScroll: false})
       setTimeout(()=>this.setState({warning: null}), hideMillis)
   }
-} // 
+  
+}
 
 
 
@@ -358,7 +371,28 @@ class App extends React.Component{
 ReactDOM.render(<App />, appDiv) //document.body)
 
 
+function refreshSocketListeners(){
+      console.log('refreshing emit and bc', window.socket)
+      if (!window.socket) return;
+    
+      window.socket.on('msg', msg=>{
+          console.log('new socket msg', msg)
+          alert('EMIT')
+          if (this.state.activeRoom === msg.room) {
 
+              this.setState((prev, props)=>{
+                  prev.messages.push(msg)
+                  return {messages: prev.messages, shouldScroll: true}
+              })
+          } else spawnNotification(`New msg in room ${msg.room.toUpperCase()}`, `~ ${msg.from} ~ wrote something`)
+      })
+    
+    
+      window.socket.on('broadcast', msg =>{
+          console.log('socket broadcast', msg)
+          return alert('BC')
+      })
+}
 
 
 
@@ -397,3 +431,5 @@ function spawnNotification(body, title){
   }
   const n = new Notification(title, options)
 }
+
+

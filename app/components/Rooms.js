@@ -17,6 +17,8 @@ class Rooms extends React.Component{
     })
   }
   logout(){
+    window.socket.emit('leave', localStorage.getItem('lastRoom') )
+    window.socket.disconnect()
     localStorage.removeItem('userName')
     localStorage.removeItem('lastRoom')
     open('/logout','_self')

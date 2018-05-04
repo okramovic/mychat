@@ -66,6 +66,87 @@ const checkAccess = (req,res,next) =>{
 
 
 
+io.sockets.on('connection', socket =>{
+      // https://stackoverflow.com/questions/9262811/socket-io-messaging-to-multiple-rooms?rq=1
+      // https://stackoverflow.com/questions/17476294/how-to-send-a-message-to-a-particular-client-with-socket-io?rq=1
+      // long ones
+      //       http://www.psitsmike.com/2011/10/node-js-and-socket-io-multiroom-chat-tutorial/
+      //       https://udidu.blogspot.co.at/2012/11/chat-evolution-nodejs-and-socketio.html
+  
+      // https://github.com/jgonera/socket.io-multichat/blob/master/app.js
+  
+  
+  
+  //console.log('connection', socket.client)
+  //console.log('glob connection', Glob_socket.handshake)
+  console.log('connection', socket.handshake.query.room, socket.handshake.query)
+  const socRoom = socket.handshake.query.room
+  socket.join(socRoom)
+  
+        //console.log(io.sockets)
+  
+  Glob_socket = socket
+  
+  Glob_socket.on('msg', (msg) =>{
+    
+    console.log( msg, Glob_socket.handshake.query)
+    //socket.broadcast.to(msg.room).emit("message to all other users in channel");
+    
+    
+    //socket.emit('msg', 'test')
+    
+    
+    addMsgToRoom(msg)
+    .then(result=>{
+        console.log('msg added to file')
+      
+        //Glob_socket.emit('msg', result)
+        io.sockets.in(result.room).emit('msg', result);
+        // io.sockets.in('some other room').emit('hi');
+        // versus: socket.broadcast.to('a room').send('im here');
+      
+        if (result.room =='bot'){
+           const botmsg = {room: 'bot', from: "m's agent", text: null, timeStamp: Date.now()}
+           
+           sendToWit(msg.text)
+           .then( res =>{
+               
+               botmsg.text = `you are asking me about ${res.value}?`
+               
+               //Glob_socket.emit('msg', botmsg)
+               io.sockets.in(result.room).emit('msg', botmsg);
+               addMsgToRoom(botmsg)
+             
+           }).catch(er=>{
+             
+               botmsg.text = "Sorry, i'm not very smart yet"
+             
+               //Glob_socket.emit('msg', botmsg)
+               io.sockets.in(result.room).emit('msg', botmsg);
+               addMsgToRoom(botmsg)
+               
+           })
+        }
+    })
+    
+    
+  })
+  
+  Glob_socket.on('leave', room=>{
+      console.log(`leaving room ${room}`)
+      Glob_socket.leave(room)
+  }) 
+  
+  Glob_socket.on('disconnect', (ev) =>{
+    
+    console.log('disconnected', ev ) 
+  })
+}) 
+
+
+
+
+
 app.get("/", (req, res) =>{
   //console.log('/', req.session)
   if (!req.session._id)   res.redirect('/login')
@@ -213,45 +294,7 @@ function checkFiles(){
     })
 }
 
-io.on('connection', socket =>{
-  Glob_socket = socket
-  //console.log('connection', socket.client)
-  console.log('glob connection', Glob_socket.handshake.query)
-  
-  Glob_socket.on('msg', (msg) =>{
-    console.log( msg, Glob_socket.handshake.query)
-    
-    addMsgToRoom(msg)
-    .then(result=>{
-        console.log('msg added to file')
-      
-        Glob_socket.emit('msg', result)
-      
-        if (result.room =='bot'){
-           const botmsg = {room: 'bot', from: "m's agent", text: null, timeStamp: Date.now()}
-           
-           sendToWit(msg.text)
-           .then( res =>{
-               
-               botmsg.text = `you are asking me about ${res.value}?`
-               
-               Glob_socket.emit('msg', botmsg)
-               addMsgToRoom(botmsg)
-             
-           }).catch(er=>{
-             
-               botmsg.text = "Sorry, i'm not very smart yet"
-               addMsgToRoom(botmsg)
-               Glob_socket.emit('msg', botmsg)
-           })
-        }
-    })
-    
-    
-  })
-  
-  Glob_socket.on('disconnect', (ev) =>{console.log('disconnected', ev ) })
-})
+
 
 app.get('/logout', (req,res)=>{
   req.session.destroy(() => {
