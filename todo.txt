@@ -1,11 +1,8 @@
-add sending files
 
 
 send push notifications about new messages
 
 improve to whom sockets send new messages
-change message input field to textarea (so it has more lines)
-
 
 
 add: componentWillUnmount: function () {
@@ -30,3 +27,12 @@ done
       = add http:// in href attribute for those
 - display warning 'not allowed'
 - intelligent scrolling to last message
+- change message input field to textarea (so it has more lines)
+- add req.session gate on file upload API
+- add sending files
+
+
+
+- - - - - - - - - - - - - - - - - - - - - - - -
+notifs
+  https://developer.mozilla.org/en-US/docs/Web/API/notification

@@ -2,6 +2,7 @@ dependencies:
   body-parser: 1.18.2
   connect-mongo: 2.0.1
   express: 4.16.3
+  express-fileupload: 0.4.0
   express-session: 1.15.6
   jsx-loader: 0.13.2
   mongodb: 3.0.7
@@ -1133,6 +1134,15 @@ packages:
     dev: false
     resolution:
       integrity: sha1-hZgoeOIbmOHGZCXgPQF0eI9Wnug=
+  /busboy/0.2.14:
+    dependencies:
+      dicer: 0.2.5
+      readable-stream: 1.1.14
+    dev: false
+    engines:
+      node: '>=0.8.0'
+    resolution:
+      integrity: sha1-bCpiLvz0fFe7vh4qnDetNseSVFM=
   /bytes/3.0.0:
     dev: false
     engines:
@@ -1235,6 +1245,10 @@ packages:
     dev: false
     resolution:
       integrity: sha1-tUc7M9yXxCTl2Y3IfVXU2KKci/I=
+  /charenc/0.0.2:
+    dev: false
+    resolution:
+      integrity: sha1-wKHS86cJLgN3S/qD8UwPxXkKhmc=
   /chokidar/2.0.3:
     dependencies:
       anymatch: 2.0.0
@@ -1601,6 +1615,10 @@ packages:
       node: '>=4.8'
     resolution:
       integrity: sha512-eTVLrBSt7fjbDygz805pMnstIs2VTBNkRm0qxZd+M7A5XDdxVRWO5MxGBXZhjY4cqLYLdtrGqRf8mBPmzwSpWQ==
+  /crypt/0.0.2:
+    dev: false
+    resolution:
+      integrity: sha1-iNf/fsDfuG9xPch7u0LQRNPmxBs=
   /cryptiles/3.1.2:
     dependencies:
       boom: 5.2.0
@@ -1771,6 +1789,15 @@ packages:
     dev: false
     resolution:
       integrity: sha512-H6PmeeUcZloWtdt4DAkFyzFL94arpHr3NOwwmVILFiy+9Qd4JTxxXrzfyGk/lmct2qVGBwTSwSXagqu2BxmWig==
+  /dicer/0.2.5:
+    dependencies:
+      readable-stream: 1.1.14
+      streamsearch: 0.1.2
+    dev: false
+    engines:
+      node: '>=0.8.0'
+    resolution:
+      integrity: sha1-WZbAhrszIYyBLAkL3cCc0S+stw8=
   /diff/3.5.0:
     dev: false
     engines:
@@ -2074,6 +2101,17 @@ packages:
       node: '>=0.10.0'
     resolution:
       integrity: sha1-l+gBqgUt8CRU3kawK/YhZCzchQI=
+  /express-fileupload/0.4.0:
+    dependencies:
+      busboy: 0.2.14
+      fs-extra: 4.0.3
+      md5: 2.2.1
+      streamifier: 0.1.1
+    dev: false
+    engines:
+      node: '>=4.0.0'
+    resolution:
+      integrity: sha512-jPv3aCdTIdQrGAUXQ1e1hU0Vnl+0jE9IbzEsI7VRIevQybrUrIMUgvwNwBThnsetandW8+9ICgflAkhKwLUuLw==
   /express-session/1.15.6:
     dependencies:
       cookie: 0.3.1
@@ -2367,6 +2405,14 @@ packages:
     dev: false
     resolution:
       integrity: sha1-i/tVAr3kpNNs/e6gB/zKIdfjgq8=
+  /fs-extra/4.0.3:
+    dependencies:
+      graceful-fs: 4.1.11
+      jsonfile: 4.0.0
+      universalify: 0.1.1
+    dev: false
+    resolution:
+      integrity: sha512-q6rbdDd1o2mAnQreO7YADIxf/Whx4AHBiRf6d+/cVT8h44ss+lHgxf1FemcqDnQt9X3ct4McHr+JMGlYSsK7Cg==
   /fs-write-stream-atomic/1.0.10:
     dependencies:
       graceful-fs: 4.1.11
@@ -3184,6 +3230,10 @@ packages:
       node: '>=0.10.0'
     resolution:
       integrity: sha512-eXK1UInq2bPmjyX6e3VHIzMLobc4J94i4AWn+Hpq3OU5KkrRC96OAcR3PRJ/pGu6m8TRnBHP9dkXQVsT/COVIA==
+  /isarray/0.0.1:
+    dev: false
+    resolution:
+      integrity: sha1-ihis/Kmo9Bd+Cav8YDiTmwXR7t8=
   /isarray/1.0.0:
     dev: false
     resolution:
@@ -3325,6 +3375,12 @@ packages:
     dev: false
     resolution:
       integrity: sha1-Hq3nrMASA0rYTiOWdn6tn6VJWCE=
+  /jsonfile/4.0.0:
+    dev: false
+    optionalDependencies:
+      graceful-fs: 4.1.11
+    resolution:
+      integrity: sha1-h3Gq4HmbZAdrdmQPygWPnBDjPss=
   /jsprim/1.4.1:
     dependencies:
       assert-plus: 1.0.0
@@ -3581,6 +3637,14 @@ packages:
     dev: false
     resolution:
       integrity: sha1-6b296UogpawYsENA/Fdk1bCdkB0=
+  /md5/2.2.1:
+    dependencies:
+      charenc: 0.0.2
+      crypt: 0.0.2
+      is-buffer: 1.1.6
+    dev: false
+    resolution:
+      integrity: sha1-U6s41f48iJG6RlMp6iP6wFQBJvk=
   /media-typer/0.3.0:
     dev: false
     engines:
@@ -4611,6 +4675,15 @@ packages:
       node: '>=4'
     resolution:
       integrity: sha1-nLxoaXj+5l0WwA4rGcI3/Pbjg4k=
+  /readable-stream/1.1.14:
+    dependencies:
+      core-util-is: 1.0.2
+      inherits: 2.0.3
+      isarray: 0.0.1
+      string_decoder: 0.10.31
+    dev: false
+    resolution:
+      integrity: sha1-fPTFTvZI44EwhMY23SB54WbAgdk=
   /readable-stream/2.2.7:
     dependencies:
       buffer-shims: 1.0.0
@@ -5352,6 +5425,18 @@ packages:
       node: '>=0.12.0'
     resolution:
       integrity: sha1-WdbqOT2HwsDdrBCqDVYbxrpvDhA=
+  /streamifier/0.1.1:
+    dev: false
+    engines:
+      node: '>=0.10'
+    resolution:
+      integrity: sha1-l+mNj6TRBdYqJpHR3AfoINuN/E8=
+  /streamsearch/0.1.2:
+    dev: false
+    engines:
+      node: '>=0.8.0'
+    resolution:
+      integrity: sha1-gIudDlb8Jz2Am6VzOOkpkZoanxo=
   /strict-uri-encode/1.1.0:
     dev: false
     engines:
@@ -5381,6 +5466,10 @@ packages:
       node: '>=4'
     resolution:
       integrity: sha512-nOqH59deCq9SRHlxq1Aw85Jnt4w6KvLKqWVik6oA9ZklXLNIOlqg4F2yrT1MVaTjAqvVwdfeZ7w7aCvJD7ugkw==
+  /string_decoder/0.10.31:
+    dev: false
+    resolution:
+      integrity: sha1-YuIDvEF2bGwoyfyEMB2rHFMQ+pQ=
   /string_decoder/1.0.3:
     dependencies:
       safe-buffer: 5.1.1
@@ -5685,6 +5774,10 @@ packages:
     dev: false
     resolution:
       integrity: sha1-22Z258fMBimHj/GWCXx4hVrp9Ks=
+  /universalify/0.1.1:
+    dev: false
+    resolution:
+      integrity: sha1-+nG63UQ3r0wUiEHjs7Fl+enlkLc=
   /unpipe/1.0.0:
     dev: false
     engines:
@@ -6092,6 +6185,7 @@ specifiers:
   body-parser: ^1.18.2
   connect-mongo: ^2.0.1
   express: ^4.16.3
+  express-fileupload: ^0.4.0
   express-session: ^1.15.6
   jsx-loader: ^0.13.2
   mongodb: ^3.0.7

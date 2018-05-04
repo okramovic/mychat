@@ -18,17 +18,17 @@ class Messages extends React.Component{
 
       return(
         this.props.messages
-            .map(msg=>{
+            .map((msg, i) =>{
                 
                 const els = parseTextToElements(msg.text)
                 //console.log('els to render', els)
                 
                 return(
-                  <div className="chatMsg">
+                  <div key={i} className="chatMsg">
                     <span className="msgAuthor" >{msg.from}:</span>
                     <span className="msgText" >{
                         
-                        els.map(el=>{
+                        els.map((el,i)=>{
                           let link;      // for long img links, replace path with ... = keep visible only link's origin
                           if (el.img) {
                               //link = el.img  // el.a || el.span
@@ -38,16 +38,16 @@ class Messages extends React.Component{
                           
                           if (el.a) {
                             const href = /\bhttps?:\/\/\b/.test(el.a) ? el.a : 'http://' + el.a    // prevent links from being understood as local
-                            return <a href={href} className="msgText" target="_blank">{link || el.a}</a>
+                            return <a key={i} href={href} className="msgText" target="_blank">{link || el.a}</a>
                           }
                           else if (el.img) 
                                 return (
-                                  <a href={el.img} target="_blank" className="msgText">
+                                  <a key={i} href={el.img} target="_blank" className="msgText">
                                     <img src={el.img} className="msgImgPreview" alt="image "/>
                                     <span className="imgURL">{link}</span>
                                   </a>)
                           
-                          else if (el.span) return <span className="msgText">{el.span}</span>
+                          else if (el.span) return <span key={i} className="msgText">{el.span}</span>
                         })
                     }
                     </span>

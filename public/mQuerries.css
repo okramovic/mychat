@@ -1,5 +1,14 @@
+@media (max-width: 599px) {
+  input[type="submit"], #roomsRow > .roomButton{
+    font-size: 12px;
+  }
+  input[type="file"]{
+    max-width: 150px;
+  }
+}
 @media (min-width: 600px) {
- #roomsRow {
+  
+  #roomsRow {
      justify-content: center;
- }
+  }
 }

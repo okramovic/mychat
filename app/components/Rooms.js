@@ -13,7 +13,6 @@ class Rooms extends React.Component{
     })
     .then(result => result.json() )
     .then(result =>{
-          //console.log('rooms', result)
           this.setState({rooms: result.rooms})
     })
   }
