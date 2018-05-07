@@ -156,7 +156,7 @@ class App extends React.Component{
     if (lastRoom) {
       window.socket = io('https://snapdrop.glitch.me?room='+lastRoom)
       //socket = io('https://snapdrop.glitch.me',{path:'/' + lastRoom})
-      console.log('socket', window.socket)
+      //console.log('socket', window.socket)
     }
     
     this.messageHandler = this.messageHandler.bind(this)
@@ -182,6 +182,7 @@ class App extends React.Component{
       currentRoomStartDate: null,
       messages: null,
       warning: null,
+      socketConnected: null,
       shouldScroll: true,
       showFileForm: false
     }
@@ -195,12 +196,8 @@ class App extends React.Component{
     
   }
   componentDidMount(){
-    //console.log('mounted state', this.state)
-    if (this.state.activeRoom) {
-      this.getRoomContent(this.state.activeRoom)
-      refreshSocketListeners.call(this)
-    }
-    
+      if (this.state.activeRoom) this.getRoomContent(this.state.activeRoom)
+                                 //refreshSocketListeners.call(this)
   }
   
   userNameHandler(string){
@@ -282,7 +279,7 @@ class App extends React.Component{
         })
   }
   getRoomContent(roomName){
-      console.log('getRoomContent', roomName)
+      //console.log('getRoomContent', roomName)
     
       fetch('/api/roomContent',{
               method: 'POST',
@@ -291,6 +288,7 @@ class App extends React.Component{
               headers: new Headers({'content-type': 'application/json'})
       })
       .then(res=>{
+        
         if (!res.ok) {
           
             this.displayWarning('~ not for your eyes ~')
@@ -301,7 +299,7 @@ class App extends React.Component{
             return res.json()
         }
       }).then(res=>{
-          //console.log(res)
+
           if (window.socket) {
             window.socket.emit('leave', this.state.activeRoom)
             window.socket.disconnect()
@@ -331,6 +329,7 @@ class App extends React.Component{
     const display = (this.state.showFileForm == true) ? 'block': 'none',
           roomOK = (this.state.activeRoom == 'me' || this.state.activeRoom == 'ku' || 
                     this.state.activeRoom == 'mak' || this.state.activeRoom == 'vlad' )
+    
     //console.log('display', display, this.state.showFileForm)
     return(
       <div id="app">
@@ -344,7 +343,8 @@ class App extends React.Component{
                fileHandler={this.fileHandler} fileReady={this.state.fileReady} 
                uploadHandler={this.uploadHandler} openFileForm={this.openFileForm}
                user={this.state.userName} inputHandler={this.messageHandler} 
-               makeBottomSpace={this.state.showFileForm} display={!this.state.showFileForm}/>
+               makeBottomSpace={this.state.showFileForm} 
+               display={!this.state.showFileForm && this.state.socketConnected}/>
         
         <FileUploadForm fileSubmitHandler={this.fileSubmitHandler} 
              display={this.state.showFileForm && roomOK}
@@ -356,9 +356,9 @@ class App extends React.Component{
         <Warning text={this.state.warning}/>
       </div>
   )}
-  displayWarning(msg = 'Sorry, something went wrong. Try again', hideMillis = 3500){
+  displayWarning(msg = 'Sorry, something went wrong. Try again', hideMillis = 3500, hide = true){
       this.setState({warning: msg, shouldScroll: false})
-      setTimeout(()=>this.setState({warning: null}), hideMillis)
+      if (hide) setTimeout(()=>this.setState({warning: null}), hideMillis)
   }
   
 }
@@ -367,18 +367,40 @@ class App extends React.Component{
 
 
 
-//ReactDOM.render(<App />, test)
-ReactDOM.render(<App />, appDiv) //document.body)
+
+ReactDOM.render(<App />, appDiv)
 
 
 function refreshSocketListeners(){
-      console.log('refreshing emit and bc', window.socket)
+      //  https://socket.io/docs/client-api/#event-connect
+      console.log('refreshing socket:', window.socket)
+  
       if (!window.socket) return;
     
+      window.socket.on('connect', ()=>{ 
+            console.log('socket connected')
+            this.setState({socketConnected: true})
+      })
+      window.socket.on('disconnect', reason =>{ 
+            console.error('socket DISconnected')
+            this.setState({socketConnected: false}, ()=> this.displayWarning('refresh the page please', null, false) )
+      })
+      window.socket.on('error', error =>{ 
+            console.error('socket Error')
+            this.setState({socketConnected: false}, ()=> this.displayWarning('refresh the page please', null, false) )
+            
+      })
+      window.socket.on('connect_timeout', timeout =>{ 
+            console.error('socket connect_timeout') 
+            //window.socket.open()  ? 
+      })
+  
+  
+  
       window.socket.on('msg', msg=>{
           console.log('new socket msg', msg)
-          alert('EMIT')
-          if (this.state.activeRoom === msg.room) {
+          //alert('EMIT')
+          if (this.state.activeRoom == msg.room) {
 
               this.setState((prev, props)=>{
                   prev.messages.push(msg)
@@ -390,7 +412,7 @@ function refreshSocketListeners(){
     
       window.socket.on('broadcast', msg =>{
           console.log('socket broadcast', msg)
-          return alert('BC')
+          //return alert('BC')
       })
 }
 

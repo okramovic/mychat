@@ -61,6 +61,8 @@ class Messages extends React.Component{
 }
 
 
+
+
 class Chat extends React.Component{
   constructor(props){
       super(props)
@@ -72,7 +74,7 @@ class Chat extends React.Component{
   }
   componentDidMount(){
     //console.log('chat: !this.props.loggedIn?', !this.props.loggedIn, !this.state.lastRoom)
-    if (!this.props.loggedIn || !this.state.lastRoom) return console.log('!!! not fetching');
+    /*if (!this.props.loggedIn || !this.state.lastRoom) return console.log('!!! not fetching');
     
     //console.log('fetching room content 2')
     fetch('/api/roomContent',{
@@ -83,7 +85,7 @@ class Chat extends React.Component{
               'Content-Type': 'application/json'
             })
     }).then(result=>{
-            console.log(result)
+            console.log(' - - - fetched messages',result)
           //if(result.ok) 
             if(!result.ok)  throw new Error('no data')
             else return result.json()
@@ -94,7 +96,7 @@ class Chat extends React.Component{
     }).catch(er=>{
               console.log('error', er)
       
-    })
+    })*/
     
   }
   render(){
@@ -111,10 +113,11 @@ class Chat extends React.Component{
     
         return(
           <div id="chatContainer" style={{marginBottom: "95px"}}>
-            <h1 className="chatMsg alignCenter" >Galactic time: {this.props.started || this.state.started || Date.now() }</h1>
-            <Messages messages={this.props.messages || this.state.messages} started={this.props.started || this.state.started}/>
+            <h1 className="chatMsg alignCenter" >Galactic time: { this.props.started || Date.now() }</h1>
+            <Messages messages={this.props.messages}
+                      started={this.props.started}/>
           </div>
-        )
+        ) //   || this.state.messages} 
   }
   componentDidUpdate(){
       //console.log('chat el updated, scroll?', this.props.scroll)

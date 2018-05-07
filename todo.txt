@@ -37,7 +37,8 @@ done
 - change message input field to textarea (so it has more lines)
 - add req.session gate on file upload API
 - add sending files
-- readd send msg on Enter, shift+enter makes new line
+- re-add send msg on Enter, shift+enter makes new line
+- on sockets: added disconnect and error (etc) event listeners on client
 
 
 
