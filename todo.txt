@@ -1,26 +1,29 @@
-add sending files
 
 
 send push notifications about new messages
 
-improve to whom sockets send new messages
-change message input field to textarea (so it has more lines)
+
+improve to whom server-socket sends new messages
+
+
+render chatrooms on server 
+    - to learn new thing
+    - to save memory in browser (all those fetched files when changing rooms) ?
 
 
 
 add: componentWillUnmount: function () {
     socket.removeListener('data', this.handleData);
-  },
+}
 
-  
+
 - - - - - - - - - - - - - - - - - - - - - - - -  
 done
 - react app components
   navbar with 3 chat rooms
   chat room feed
   input - text
-  //input file
-  
+  input file
 - add some gate:
     session?
 - use geametric cave paintings as background instead of space?
@@ -30,3 +33,14 @@ done
       = add http:// in href attribute for those
 - display warning 'not allowed'
 - intelligent scrolling to last message
+- change message input field to textarea (so it has more lines)
+- add req.session gate on file upload API
+- add sending files
+- re-add send msg on Enter, shift+enter makes new line
+- on sockets: added disconnect and error (etc) event listeners on client
+
+
+
+- - - - - - - - - - - - - - - - - - - - - - - -
+notifs
+  https://developer.mozilla.org/en-US/docs/Web/API/notification

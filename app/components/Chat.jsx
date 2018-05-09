@@ -14,21 +14,21 @@ class Messages extends React.Component{
   }
   render(){
     //console.log('msg render', this.props.messages)
-    if (!this.props.messages) return <h1 style={{width: '100vw', textAlign: 'center'}}>not for your eyes</h1>
+    if (!this.props.messages) return <h1 style={{width: '100vw', textAlign: 'center'}}>~</h1>
 
       return(
         this.props.messages
-            .map(msg=>{
+            .map((msg, i) =>{
                 
                 const els = parseTextToElements(msg.text)
                 //console.log('els to render', els)
                 
                 return(
-                  <div className="chatMsg">
+                  <div key={i} className="chatMsg">
                     <span className="msgAuthor" >{msg.from}:</span>
                     <span className="msgText" >{
                         
-                        els.map(el=>{
+                        els.map((el,i)=>{
                           let link;      // for long img links, replace path with ... = keep visible only link's origin
                           if (el.img) {
                               //link = el.img  // el.a || el.span
@@ -38,16 +38,16 @@ class Messages extends React.Component{
                           
                           if (el.a) {
                             const href = /\bhttps?:\/\/\b/.test(el.a) ? el.a : 'http://' + el.a    // prevent links from being understood as local
-                            return <a href={href} className="msgText" target="_blank">{link || el.a}</a>
+                            return <a key={i} href={href} className="msgText" target="_blank">{link || el.a}</a>
                           }
                           else if (el.img) 
                                 return (
-                                  <a href={el.img} target="_blank" className="msgText">
+                                  <a key={i} href={el.img} target="_blank" className="msgText">
                                     <img src={el.img} className="msgImgPreview" alt="image "/>
                                     <span className="imgURL">{link}</span>
                                   </a>)
                           
-                          else if (el.span) return <span className="msgText">{el.span}</span>
+                          else if (el.span) return <span key={i} className="msgText">{el.span}</span>
                         })
                     }
                     </span>
@@ -61,6 +61,8 @@ class Messages extends React.Component{
 }
 
 
+
+
 class Chat extends React.Component{
   constructor(props){
       super(props)
@@ -72,7 +74,7 @@ class Chat extends React.Component{
   }
   componentDidMount(){
     //console.log('chat: !this.props.loggedIn?', !this.props.loggedIn, !this.state.lastRoom)
-    if (!this.props.loggedIn || !this.state.lastRoom) return console.log('!!! not fetching');
+    /*if (!this.props.loggedIn || !this.state.lastRoom) return console.log('!!! not fetching');
     
     //console.log('fetching room content 2')
     fetch('/api/roomContent',{
@@ -83,7 +85,7 @@ class Chat extends React.Component{
               'Content-Type': 'application/json'
             })
     }).then(result=>{
-            console.log(result)
+            console.log(' - - - fetched messages',result)
           //if(result.ok) 
             if(!result.ok)  throw new Error('no data')
             else return result.json()
@@ -94,7 +96,7 @@ class Chat extends React.Component{
     }).catch(er=>{
               console.log('error', er)
       
-    })
+    })*/
     
   }
   render(){
@@ -111,10 +113,11 @@ class Chat extends React.Component{
     
         return(
           <div id="chatContainer" style={{marginBottom: "95px"}}>
-            <h1 className="chatMsg alignCenter" >Galactic time: {this.props.started || this.state.started || Date.now() }</h1>
-            <Messages messages={this.props.messages || this.state.messages} started={this.props.started || this.state.started}/>
+            <h1 className="chatMsg alignCenter" >Galactic time: { this.props.started || Date.now() }</h1>
+            <Messages messages={this.props.messages}
+                      started={this.props.started}/>
           </div>
-        )
+        ) //   || this.state.messages} 
   }
   componentDidUpdate(){
       //console.log('chat el updated, scroll?', this.props.scroll)

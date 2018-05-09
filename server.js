@@ -9,7 +9,10 @@ const express = require('express'),
       mongo = require('mongodb').MongoClient,
       MongoStore = require('connect-mongo')(session),
       io = require('socket.io')(http),
-      {Wit, log} = require('node-wit');
+      {Wit, log} = require('node-wit'),
+      fileUpload = require('express-fileupload')  //  https://www.npmjs.com/package/express-fileupload
+
+let Glob_socket;
 
 const jsonParser = bodyParser.json()
 // https://www.npmjs.com/package/body-parser#express-route-specific
@@ -18,7 +21,7 @@ const jsonParser = bodyParser.json()
 
 //app.use(bodyParser.json());
 //app.use(bodyParser.urlencoded({ extended: false }) );
-app.use(express.static('public'));
+app.use('/public',express.static('public'));
 app.use(session({
       secret: process.env.sessionSecret,
       resave: false,
@@ -26,8 +29,9 @@ app.use(session({
       store: new MongoStore({ url: process.env.mongoURL})
 }))
 
+
 io.use((socket, next) => {
-  console.log(socket.handshake.query, '\n', socket.handshake)
+  //console.log(socket.handshake.query, '\n', socket.handshake)
   let room = socket.handshake.query;
   //if (isValid(token)) {
   return next();
@@ -62,21 +66,113 @@ const checkAccess = (req,res,next) =>{
 
 
 
+io.sockets.on('connection', socket =>{
+      // https://stackoverflow.com/questions/9262811/socket-io-messaging-to-multiple-rooms?rq=1
+      // https://stackoverflow.com/questions/17476294/how-to-send-a-message-to-a-particular-client-with-socket-io?rq=1
+      // long ones
+      //       http://www.psitsmike.com/2011/10/node-js-and-socket-io-multiroom-chat-tutorial/
+      //       https://udidu.blogspot.co.at/2012/11/chat-evolution-nodejs-and-socketio.html
+  
+      // https://github.com/jgonera/socket.io-multichat/blob/master/app.js
+  
+  
+  
+  //console.log('connection', socket.client)
+  //console.log('glob connection', Glob_socket.handshake)
+  console.log('connection', socket.handshake.query.room, socket.handshake.query)
+  const socRoom = socket.handshake.query.room
+  socket.join(socRoom)
+  
+        //console.log(io.sockets)
+  
+  Glob_socket = socket
+  
+  Glob_socket.on('msg', (msg) =>{
+    
+    console.log( msg, Glob_socket.handshake.query)
+    //socket.broadcast.to(msg.room).emit("message to all other users in channel");
+    
+    
+    //socket.emit('msg', 'test')
+    
+    
+    addMsgToRoom(msg)
+    .then(result=>{
+        console.log('msg added to file')
+      
+        //Glob_socket.emit('msg', result)
+        io.sockets.in(result.room).emit('msg', result);
+        // io.sockets.in('some other room').emit('hi');
+        // versus: socket.broadcast.to('a room').send('im here');
+      
+        if (result.room =='bot'){
+           const botmsg = {room: 'bot', from: "m's agent", text: null, timeStamp: Date.now()}
+           
+           sendToWit(msg.text)
+           .then( res =>{
+               
+               botmsg.text = `I think you are asking me about ${res.value}`
+               
+               //Glob_socket.emit('msg', botmsg)
+               io.sockets.in(result.room).emit('msg', botmsg);
+               addMsgToRoom(botmsg)
+             
+           }).catch(er=>{
+             
+               botmsg.text = "Sorry, i'm not very smart yet"
+             
+               //Glob_socket.emit('msg', botmsg)
+               io.sockets.in(result.room).emit('msg', botmsg);
+               addMsgToRoom(botmsg)
+               
+           })
+        }
+    })
+    
+    
+  })
+  
+  Glob_socket.on('leave', room=>{
+      console.log(`leaving room ${room}`)
+      Glob_socket.leave(room)
+  }) 
+  
+  Glob_socket.on('disconnect', (ev) =>{
+    
+    console.log('disconnected', ev ) 
+  })
+}) 
+
+
+
+
+
 app.get("/", (req, res) =>{
-  //console.log('/', req.session)
-  
-  
-  if (!req.session._id)   res.redirect('/login')
+  console.log('/', req.session)
+  if (!req.session._id)   res.sendFile(__dirname + '/app/login.html'); //res.redirect('/login')
   //res.sendFile(__dirname + '/app/login.html');
-  
-  else   res.sendFile(__dirname + '/app/index.html');
-  
+  else   
+    res.sendFile(__dirname + '/app/index.html');
 });
+app.get("/service-worker.js", (req, res) =>{
+    //console.log('SW', __dirname + '/service-worker.js')
+    res.sendFile(__dirname + '/service-worker.js')
+})
+/*app.get("/upload", (req, res) =>{
+    res.sendFile(__dirname + '/app/upload.html');
+})*/
+app.get("/bot", (req, res) =>{
+    console.log('/bot')
+    res.end('in progress')
+})
+
+
+
 app.get('/login', (req,res)=>{
     if (!req.session._id) res.sendFile(__dirname + '/app/login.html')
     else res.redirect('/')
 })
-app.post('/login', jsonParser, (req,res)=>{
+app.post('/api/login', jsonParser, (req,res)=>{
   
     console.log('loggin in',req.body)
     
@@ -130,24 +226,109 @@ app.post('/api/roomContent', jsonParser, checkAccess, allowRoomAccess, (req, res
   
     fs.readFile(`rooms/${req.body.room}.json`, (err, data)=>{
         if (err) {
-            res.sendStatus(500)
+            //res.sendStatus(500)
+            res.end()
             throw err;
         }
         else res.end(data)
     })
 })
+app.get(/sentfiles\/.*/, (req,res)=>{
+      res.sendFile(__dirname + req.url)
+})
 
 
+//app.use(fileUpload())
+app.post('/api/uploadFile', checkAccess, fileUpload(), (req,response)=>{
 
-io.on('connection', socket =>{
-  //console.log('connection', socket.client)
-  console.log('connection', socket.handshake.query)
+    console.log(req.headers['x-app-roomname'], req.headers['x-app-username'], req.files)
   
-  socket.on('msg', (msg) =>{
-    console.log( msg)
+    if (req.files.uploadFile.data.length > 5 * 1000 *1000) return response.sendStatus(413) // code = payload too large
+  
+    //console.log(req.headers)
+    //console.log('file upload', req.headers['x-app-filename'], req.headers['x-app-filetype'])  
+  
+
+    const room = req.headers['x-app-roomname'],
+          user = req.headers['x-app-username'],
+          fileName = encodeURI( req.headers['x-app-filename'] || req.files.uploadFile.name )
+  
+    if (!room || !user || !fileName) return console.error('file info missing', room ,user,fileName)
+  
+    /*  didnt work
+          let fileData = [];
+          req.on('data', chunk=>fileData+=chunk)
+          req.on('end', ()=>{*/
     
-    
-    
+  
+    fs.open('./sentfiles/' + room + '/', 'r', (er, fd)=>{
+        if (er) {
+                 console.error(er, er.errno)
+                 if (er.code == 'ENOENT') {
+                     console.log('----missing directory')
+                     fs.mkdirSync('./sentfiles/' + room)
+
+                 } else return response.sendStatus(500);
+        } 
+      
+        req.files.uploadFile.mv(`./sentfiles/${room}/${fileName}`, function(err) {
+          if (err) return response.status(500).send(err);
+
+          
+          const fp2 = 'sentfiles/' + room + '/' + fileName
+          const msg =  {room , from: user, text: `file: https://snapdrop.glitch.me/${fp2}`, timeStamp: Date.now()}
+        
+          addMsgToRoom(msg)
+          .then(res=>{
+                response.sendStatus(200)
+                //response.redirect('/')
+                Glob_socket.emit('msg', res);   
+          })
+          
+
+        })
+      
+        //const filePath = './sentfiles/' + room + '/' + fileName
+        //const writable = fs.createWriteStream(filePath)
+        //req.pipe(writable)
+        
+
+        
+   })
+})
+ 
+//checkFiles()
+function checkFiles(){
+    fs.readdir('sentfiles', (er, files)=>{
+        if (er) throw er
+        console.log('sentfiles/',files)
+    })
+}
+
+
+
+app.get('/logout', (req,res)=>{
+  req.session.destroy(() => {
+    res.redirect('/login')
+      /*res.json({
+        success: true,
+        message: "Logged out."
+      })*/
+  })
+})
+
+
+http.listen(3000, ()=>console.log('- - - - on port 3000 - - - -'))
+
+const validMsg = msg => {
+  
+    if (msg.room && msg.from && msg.text && msg.timeStamp) return true
+    else return false
+}
+
+
+function addMsgToRoom(msg){
+  return new Promise((resolve, reject)=>{
     const room = msg.room
     if ( validMsg(msg) == true ) fs.readFile(`rooms/${room}.json`, 'utf8', (err, file)=>{
         if (err) throw err
@@ -162,38 +343,13 @@ io.on('connection', socket =>{
               if (err) throw err
               msg.room = room
               
-              socket.emit('msg', msg);
-              if (room =='bot')
-                  sendToWit(msg.text)
-                  .then( res =>{
-
-                          socket.emit('msg', {room: 'bot', from: "m's agent",text: "Sorry, i'm not very smart yet", timeStamp: Date.now()})
-                  }) 
-              
+              //socket.emit('msg', msg);
+              resolve(msg)
           })
         }
     })
     else console.error('not valid msg')
   })
-})
-
-app.get('/logout', (req,res)=>{
-  req.session.destroy(() => {
-    res.redirect('/login')
-      /*res.json({
-        success: true,
-        message: "Logged out."
-      })*/
-  })
-})
-
-
-http.listen(3000, ()=>console.log('on port 3000'))
-
-const validMsg = msg => {
-  
-    if (msg.room && msg.from && msg.text && msg.timeStamp) return true
-    else return false
 }
 
 function findUser(userName){
@@ -235,23 +391,31 @@ function allowRoomAccess(req,res,next){
         else console.error(er)
     })
 }
-//delFile()
-function delFile(){
-  fs.readdir('rooms', (er, files)=>{
+
+
+//readfile('sentfiles/__ test vocab.txt')
+function readfile(path){
+    fs.readFile(path, 'utf8',(er,data)=>{
+      console.log('file data',data)
+    })
+}
+//delFile('sentfiles/undefined')
+function delFile(path){
+  //fs.readdir('rooms', (er, files)=>{
     
-      const jsons = files.filter(name =>name.match(/.json$/))
-      console.log(jsons)  
-      fs.unlink('rooms/undefined.json',(er)=>{
+      //const jsons = files.filter(name =>name.match(/.json$/))
+      //console.log(jsons)  
+      fs.unlink(path,(er)=>{
         console.log('error?', er)
         
-        fs.readdir('rooms', (er, files)=>{
+        fs.readdir('sentfiles', (er, files)=>{
     
-            const jsons = files.filter(name =>name.match(/.json$/))
-            console.log(jsons)  
+            //const jsons = files.filter(name =>name.match(/.json$/))
+            console.log(files)
         })
         
       })
-  })
+  //})
 }
 
 //sendToWit('which language do you like most?')
@@ -262,10 +426,13 @@ function sendToWit(text){
       
       witClient.message(text, {})
       .then(data =>{
-
         console.log('Wit: \n', data)
+        
+        if (!data.entities.intent) return reject('no intent')
+        
+        
         console.log(data.entities.intent) // .value
-        resolve()
+        resolve(data.entities.intent[0])
       })
       .catch(console.error)
       

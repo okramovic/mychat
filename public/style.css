@@ -21,7 +21,7 @@ form{
   margin: 0 auto;
   min-height: 100vh;
 }
-input[type="text"], input[type="password"]{
+input[type="text"], input[type="password"], textarea{
   width: 65%;
   height: 45px;
   border: none;
@@ -102,7 +102,7 @@ button:disabled, [type="submit"]:disabled{
   overflow: hidden;
 }
 
-input[type="text"]::placeholder, input[type="password"]::placeholder {
+input[type="text"]::placeholder, input[type="password"]::placeholder, textarea::placeholder {
   font-size: 17px;
   color: rgba(150,150,150,1);
   text-decoration: underline;
@@ -116,6 +116,25 @@ input[type="submit"]{
   
   max-width: 100px;
   min-width: 30px;
+}
+.icon{
+  user-select: none;
+  cursor: pointer;
+}
+input[type="file"]{
+  /*-border: 2px solid green;*/
+  margin: 1em;
+}
+
+#uploadFileForm{
+  position: fixed;
+  left: 0;
+  bottom: 0;
+  z-index: 2;
+  height: 60px;
+  /*-width: 100%;*/
+  background-color: rgba(200,200,255, 0.9);
+  
 }
 
 .full{
@@ -160,7 +179,7 @@ input[type="submit"]{
   position: fixed;
   top: 0;
   left: 0;
-  background-color: rgba(200,200,200,.7);
+  background-color: rgba(200,200,200,.85);
   width: 100vw;
   height: 100vh;
   z-index: 1;
@@ -169,18 +188,18 @@ input[type="submit"]{
   display: block;
 }*/
 #warning{
-  width: 100vw;
+  width: calc(80vw - 6px);
   margin: auto;
   color: red;
   font-size: 25px;
-  padding: 10px;
+  border: 3px solid red;
+  padding: 25px 0;
   position: fixed;
-  
-  top: calc((100vh/2) - 35px);
-  background-color: rgba(255,255,255, .7);
+  top: calc((100vh/2) - 50px);
+  background-color: rgba(255,255,255, .9);
 }
 #warning.warnActive{
-  left: 0;
+  left: 10vw;
   transition: left .33s;
 }
 #warning.warnHidden{

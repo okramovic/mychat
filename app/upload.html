@@ -12,7 +12,7 @@
     <link rel="stylesheet" href="public/mQuerries.css">
   </head>
   <body class="flex vert j_center">
-      <style>
+    <style>
         body{
           min-height: 100vh;
           /*background-color: rgba(200,200,255, 0.9);*/
@@ -35,18 +35,12 @@
         }
       </style>
       
-      <!--div id="main"></div-->
-      <button id="getPublic">
-        use public room
-      </button>
-      <br />
-      <form id="loginForm" class="flex vert">
-        <input type="text" name="userName" placeholder="username"/>
-        <br />
-        <input type="password" name="pass" placeholder="secret"/>
-        <br />
-        <input type="submit" value="login" />
-      </form>
+    <form  id="uploadForm" ref="some-random-text"
+              action="http://snapdrop.glitch.me/api/uploadFile"
+              method="post" enctype="multipart/form-data">
+       <input type="file" name="uploadFile" />
+       <input type="submit" value="Upload!" />
+    </form> 
       <!--div id="inputDiv" class="full">
           just a sec
       </div-->
@@ -54,17 +48,25 @@
     
       <!--script type="text/javascript" src="/bundle.js"></script-->
     <script>
-      document.querySelector('#loginForm').addEventListener('submit', ev=>{
+      // https://developer.mozilla.org/en-US/docs/Web/API/FormData/Using_FormData_Objects
+      
+      document.querySelector('form').addEventListener('submit', ev=>{
         ev.preventDefault()
-        const userName = document.querySelector('#loginForm').userName.value
-        const pass = document.querySelector('#loginForm').pass.value
+        console.log('submit', document.querySelector('input[type="file"]').files )
+        const room = localStorage.getItem('lastRoom') //document.querySelector('#loginForm').userName.value
+        //const pass = document.querySelector('#loginForm').pass.value
+        let formData = new FormData();
+        formData.append('room', room)
+        formData.append("uploadFile", document.querySelector('input[type="file"]').files[0]);
         
-        fetch('/api/login', {
+        fetch('/api/uploadFile', {
                   method: 'POST', 
                   credentials: 'include',
-                  body: JSON.stringify({userName, pass}),
+                  body: formData,
                   headers: new Headers({
-                    'Content-Type': 'application/json'
+                    //'Content-Type': 'application/json'
+                    "x-app-roomname": room,
+                    "x-app-username": localStorage.getItem('userName')
                   })
         })
         .then(response=>{
@@ -72,16 +74,14 @@
           if (response.ok) location.pathname = '/'
           else console.error('not authorized')
           
-        }) //)response.json())
+        })
+        
+        //)response.json())
         /*.then(response=>{
           //console.log('loggedin?', response)
         })*/
       })
-      document.querySelector('#getPublic').addEventListener('click', ev=>{
-          localStorage.setItem('lastRoom', 'pub')
-          open('/pub','_self')
-          
-      })
+      
     </script>
   </body>
 </html>
