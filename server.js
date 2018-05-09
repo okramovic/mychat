@@ -111,7 +111,7 @@ io.sockets.on('connection', socket =>{
            sendToWit(msg.text)
            .then( res =>{
                
-               botmsg.text = `you are asking me about ${res.value}?`
+               botmsg.text = `I think you are asking me about ${res.value}`
                
                //Glob_socket.emit('msg', botmsg)
                io.sockets.in(result.room).emit('msg', botmsg);
@@ -161,7 +161,10 @@ app.get("/service-worker.js", (req, res) =>{
 /*app.get("/upload", (req, res) =>{
     res.sendFile(__dirname + '/app/upload.html');
 })*/
-
+app.get("/bot", (req, res) =>{
+    console.log('/bot')
+    res.end('in progress')
+})
 
 
 
