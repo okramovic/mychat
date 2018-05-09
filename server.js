@@ -148,20 +148,28 @@ io.sockets.on('connection', socket =>{
 
 
 app.get("/", (req, res) =>{
-  //console.log('/', req.session)
-  if (!req.session._id)   res.redirect('/login')
+  console.log('/', req.session)
+  if (!req.session._id)   res.sendFile(__dirname + '/app/login.html'); //res.redirect('/login')
   //res.sendFile(__dirname + '/app/login.html');
-  else   res.sendFile(__dirname + '/app/index.html');
+  else   
+    res.sendFile(__dirname + '/app/index.html');
 });
-app.get("/upload", (req, res) =>{
-    res.sendFile(__dirname + '/app/upload.html');
+app.get("/service-worker.js", (req, res) =>{
+    //console.log('SW', __dirname + '/service-worker.js')
+    res.sendFile(__dirname + '/service-worker.js')
 })
+/*app.get("/upload", (req, res) =>{
+    res.sendFile(__dirname + '/app/upload.html');
+})*/
+
+
+
 
 app.get('/login', (req,res)=>{
     if (!req.session._id) res.sendFile(__dirname + '/app/login.html')
     else res.redirect('/')
 })
-app.post('/login', jsonParser, (req,res)=>{
+app.post('/api/login', jsonParser, (req,res)=>{
   
     console.log('loggin in',req.body)
     
@@ -307,7 +315,7 @@ app.get('/logout', (req,res)=>{
 })
 
 
-http.listen(3000, ()=>console.log('on port 3000'))
+http.listen(3000, ()=>console.log('- - - - on port 3000 - - - -'))
 
 const validMsg = msg => {
   

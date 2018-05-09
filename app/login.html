@@ -59,7 +59,7 @@
         const userName = document.querySelector('#loginForm').userName.value
         const pass = document.querySelector('#loginForm').pass.value
         
-        fetch('/login', {
+        fetch('/api/login', {
                   method: 'POST', 
                   credentials: 'include',
                   body: JSON.stringify({userName, pass}),

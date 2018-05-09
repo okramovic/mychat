@@ -12,7 +12,7 @@ const Rooms = require('./components/Rooms'),
       Chat  = require('./components/Chat'),
       Blocker  = require('./components/helpers').Blocker,
       Warning = require('./components/helpers').Warning
-
+const applicationServerPublicKey = 'BBQo8bUp_agq-VSYI1wNBiCQ_S25FwhWw7r6d5hcbk-X50ppZCgT48tSOlzt-QVJydwLUHA32syLT4GRQj2hbrw'
 //console.log(Warning)
 
 let socket;
@@ -153,11 +153,11 @@ class App extends React.Component{
     const userName = localStorage.getItem('userName')
     const lastRoom = localStorage.getItem('lastRoom')
     
-    if (lastRoom) {
+    /*if (lastRoom) {
       window.socket = io('https://snapdrop.glitch.me?room='+lastRoom)
       //socket = io('https://snapdrop.glitch.me',{path:'/' + lastRoom})
       //console.log('socket', window.socket)
-    }
+    }*/
     
     this.messageHandler = this.messageHandler.bind(this)
     this.userNameHandler = this.userNameHandler.bind(this)
@@ -166,6 +166,8 @@ class App extends React.Component{
     this.openFileForm = this.openFileForm.bind(this)
     this.fileSubmitHandler = this.fileSubmitHandler.bind(this)
     this.displayWarning = this.displayWarning.bind(this)
+    this.removeWarning = this.removeWarning.bind(this)
+    
     //this.refreshSocketListeners = this.refreshSocketListeners.bind(this)
     
     
@@ -187,17 +189,22 @@ class App extends React.Component{
       showFileForm: false
     }
     
-    if (!Notification.permission) 
+    /*if (!Notification.permission || Notification.permission == 'default') 
           Notification.requestPermission()
           .then(result =>{
-                console.log('notif permission', result)
+                alert('notif permission ' + result)
     }) 
-    else console.log(Notification.permission)
+    else console.log(Notification.permission)*/
     
   }
   componentDidMount(){
       if (this.state.activeRoom) this.getRoomContent(this.state.activeRoom)
                                  //refreshSocketListeners.call(this)
+      //Push.Permission.request(onGranted, onDenied);
+      //if (!Push.Permission.has())  Push.Permission.request()
+    
+      window.addEventListener("message", receivePostMessage, false);
+      registerServiceWorker()
   }
   
   userNameHandler(string){
@@ -287,7 +294,7 @@ class App extends React.Component{
               body: JSON.stringify({room: roomName}),
               headers: new Headers({'content-type': 'application/json'})
       })
-      .then(res=>{
+      .then(res =>{
         
         if (!res.ok) {
           
@@ -298,7 +305,7 @@ class App extends React.Component{
             setTimeout(()=>this.setState({ warning:null }),250)
             return res.json()
         }
-      }).then(res=>{
+      }).then(res =>{
 
           if (window.socket) {
             window.socket.emit('leave', this.state.activeRoom)
@@ -319,7 +326,7 @@ class App extends React.Component{
           
       }).catch(er =>{
           console.error(er)
-          //this.setState({warning: 'Not for your eyes...'})
+          this.displayWarning('something went wrong...', null, false)
       })
   }
   
@@ -360,6 +367,9 @@ class App extends React.Component{
       this.setState({warning: msg, shouldScroll: false})
       if (hide) setTimeout(()=>this.setState({warning: null}), hideMillis)
   }
+  removeWarning(){
+      this.setState({warning: null, shouldScroll: true})
+  }
   
 }
 
@@ -372,27 +382,44 @@ ReactDOM.render(<App />, appDiv)
 
 
 function refreshSocketListeners(){
+  
       //  https://socket.io/docs/client-api/#event-connect
+  
       console.log('refreshing socket:', window.socket)
+      // Push.create('Hello World!')
+      /* Push.create('Hello world!', {
+          body: 'How\'s it hangin\'?',
+          icon: '/images/icon.png',
+          link: '/#',
+          timeout: 4000,
+          onClick: function () {
+              console.log("Fired!");
+              window.focus();
+              this.close();
+          },
+          vibrate: [200, 100, 200, 100, 200, 100, 200]
+      });*/
+      //console.log(Push.Permission.has(), Push.Permission)
   
       if (!window.socket) return;
     
       window.socket.on('connect', ()=>{ 
-            console.log('socket connected')
+            console.log('socket connected', new Date())
             this.setState({socketConnected: true})
+            this.removeWarning()
       })
       window.socket.on('disconnect', reason =>{ 
-            console.error('socket DISconnected')
+            console.error('socket DISconnected', new Date() )
             this.setState({socketConnected: false}, ()=> this.displayWarning('refresh the page please', null, false) )
       })
       window.socket.on('error', error =>{ 
-            console.error('socket Error')
+            console.error('socket Error', new Date())
             this.setState({socketConnected: false}, ()=> this.displayWarning('refresh the page please', null, false) )
             
       })
       window.socket.on('connect_timeout', timeout =>{ 
-            console.error('socket connect_timeout') 
-            //window.socket.open()  ? 
+            console.error('socket connect_timeout', new Date()) 
+            // window.socket.open()  ? 
       })
   
   
@@ -401,12 +428,15 @@ function refreshSocketListeners(){
           console.log('new socket msg', msg)
           //alert('EMIT')
           if (this.state.activeRoom == msg.room) {
-
+                
               this.setState((prev, props)=>{
                   prev.messages.push(msg)
                   return {messages: prev.messages, shouldScroll: true}
               })
-          } else spawnNotification(`New msg in room ${msg.room.toUpperCase()}`, `~ ${msg.from} ~ wrote something`)
+              //Push.create('Hello World!')
+              spawnNotification(`~ ${msg.from} ~ wrote something`, `New msg in room ${msg.room.toUpperCase()}`)
+            
+          } else spawnNotification( `~ ${msg.from} ~ wrote something`, `New msg in room ${msg.room.toUpperCase()}`)
       })
     
     
@@ -446,7 +476,76 @@ function sendFileToServer(fileBuffer, fileName, fileType, roomName, userName){
   })
 }
 
-function spawnNotification(body, title){
+function registerServiceWorker(){
+      //return;
+      if ('serviceWorker' in navigator)
+            
+            navigator.serviceWorker
+            .register('/service-worker.js')
+            .then(reg =>{
+                     console.log('Service Worker registered', reg)
+                     window.swRegistration = reg;
+              
+             }).then(()=>{
+                console.log('wreg',window.swRegistration)
+                return window.swRegistration.pushManager.getSubscription()
+              
+            }).then(subscription=> {
+                console.log('subscr', subscription)
+                window.isSubscribed = !(subscription === null);
+
+                if (window.isSubscribed) console.log('User IS subscribed.')
+                else { 
+                  console.log('User is NOT subscribed.')
+                  subscribeUser()
+                }
+                  
+
+            })
+}
+
+
+function subscribeUser() {
+  
+  const applicationServerKey = urlB64ToUint8Array(applicationServerPublicKey);
+  
+  window.swRegistration.pushManager.subscribe({
+    userVisibleOnly: true,
+    applicationServerKey: applicationServerKey
+  })
+  .then(subscription =>{
+    console.log('User is subscribed.',subscription)
+
+    //updateSubscriptionOnServer(subscription);
+
+    window.isSubscribed = true;
+
+    //updateBtn();
+  })
+  .catch(err =>{
+    console.log('Failed to subscribe the user: ', err);
+    //updateBtn();
+  });
+}
+
+function urlB64ToUint8Array(base64String) {
+  const padding = '='.repeat((4 - base64String.length % 4) % 4);
+  const base64 = (base64String + padding)
+    .replace(/\-/g, '+')
+    .replace(/_/g, '/');
+
+  const rawData = window.atob(base64);
+  const outputArray = new Uint8Array(rawData.length);
+
+  for (let i = 0; i < rawData.length; ++i) {
+    outputArray[i] = rawData.charCodeAt(i);
+  }
+  return outputArray;
+}
+
+
+
+function spawnNotification(title = 'check the chat', body='new notif'){
   const options = {
       body: body,
       icon: 'https://cdn.glitch.com/a2eec912-3cca-419e-908b-6e26f3a8dee3%2Fhand-small.png?1525434374837'
@@ -455,3 +554,10 @@ function spawnNotification(body, title){
 }
 
 
+function receivePostMessage(ev){
+    // https://developer.mozilla.org/en-US/docs/Web/API/Window/postMessage
+
+    if (!ev.origin.startsWith('https://snapdrop.glitch.me')) return;
+  
+    console.log('msg event', ev.origin)
+}

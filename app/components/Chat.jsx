@@ -14,7 +14,7 @@ class Messages extends React.Component{
   }
   render(){
     //console.log('msg render', this.props.messages)
-    if (!this.props.messages) return <h1 style={{width: '100vw', textAlign: 'center'}}>not for your eyes</h1>
+    if (!this.props.messages) return <h1 style={{width: '100vw', textAlign: 'center'}}>~</h1>
 
       return(
         this.props.messages

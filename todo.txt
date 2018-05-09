@@ -3,7 +3,7 @@
 send push notifications about new messages
 
 
-improve to whom sockets send new messages
+improve to whom server-socket sends new messages
 
 
 render chatrooms on server 
@@ -14,7 +14,7 @@ render chatrooms on server
 
 add: componentWillUnmount: function () {
     socket.removeListener('data', this.handleData);
-  },
+}
 
 
 - - - - - - - - - - - - - - - - - - - - - - - -  
@@ -23,8 +23,7 @@ done
   navbar with 3 chat rooms
   chat room feed
   input - text
-  //input file
-  
+  input file
 - add some gate:
     session?
 - use geametric cave paintings as background instead of space?

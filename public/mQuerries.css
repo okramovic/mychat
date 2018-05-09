@@ -12,3 +12,13 @@
      justify-content: center;
   }
 }
+@media (min-width: 800px) {
+  #chatContainer{
+    width: 800px;
+    margin:auto;
+  }
+  /*-#app{
+    width: 800px;
+    margin:auto;
+  }*/
+}
