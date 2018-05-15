@@ -34,7 +34,7 @@ class Rooms extends React.Component{
                     >{roomName}</button>
     })
     return(
-    <div id="roomsRow" className="flex overFlowHoriz">
+    <div id="roomsRow" className="flex j_center overFlowHoriz">
       <button className={(this.props.activeRoom == 'bot') ? "roomButton buttonActive" : "roomButton buttonInactive" }
               onClick={()=>openBotRoom()}>bot</button>
       {rooms}

@@ -1,9 +1,34 @@
+react on server tut
+extended intro 
+    https://www.smashingmagazine.com/2016/03/server-side-rendering-react-node-express/
+https://scotch.io/tutorials/react-on-the-server-for-beginners-build-a-universal-react-and-node-app
+
+https://www.youtube.com/watch?v=tsEHfL-Ul1Y
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+prevent uninvited users to be able toget push notifs etc
 
 
-send push notifications about new messages
+- - send push notifications about new messages
+https://developers.google.com/web/fundamentals/codelabs/push-notifications/
+https://github.com/web-push-libs/web-push
+https://www.jsdelivr.com/package/npm/push-js?path=example
+https://stackoverflow.com/questions/33687298/how-to-send-push-notification-to-web-browser
+https://stackoverflow.com/questions/40930285/node-js-and-push-notifications
+https://shockoe.com/blog/creating-a-push-notification-server-with-node-js/
+https://www.cronj.com/blog/browser-push-notifications-using-javascript/
 
+
+    to whom do i send push 
+        - to each member (subscription) of room, where message came from
+          (except sender)
+    
+    who sees push
+      who is not having window focused (WindowClient.focused == false)
 
 improve to whom server-socket sends new messages
+https://github.com/jgonera/socket.io-multichat/blob/master/app.js
+http://www.psitsmike.com/2011/10/node-js-and-socket-io-multiroom-chat-tutorial/
 
 
 render chatrooms on server 

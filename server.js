@@ -3,6 +3,7 @@
 const express = require('express'),
       app = express(),
       http = require('http').Server(app),
+      path = require('path'),
       fs = require('fs'),
       bodyParser = require('body-parser'),
       session = require('express-session'),
@@ -10,7 +11,10 @@ const express = require('express'),
       MongoStore = require('connect-mongo')(session),
       io = require('socket.io')(http),
       {Wit, log} = require('node-wit'),
-      fileUpload = require('express-fileupload')  //  https://www.npmjs.com/package/express-fileupload
+      fileUpload = require('express-fileupload'),  //  https://www.npmjs.com/package/express-fileupload
+      React = require('react'),
+      exphbs = require('express-handlebars'),
+      webpush = require('web-push')
 
 let Glob_socket;
 
@@ -18,6 +22,24 @@ const jsonParser = bodyParser.json()
 // https://www.npmjs.com/package/body-parser#express-route-specific
 // const urlencodedParser = bodyParser.urlencoded({ extended: false })
 // app.use(bodyParser.text({ type: 'text/html' }))
+
+// stuff for push notifs
+webpush.setVapidDetails('mailto:okram@protonmail.ch', process.env.vapidPublic, process.env.vapidPrivate)
+
+let pushSubscription = { 
+  endpoint: 'https://fcm.googleapis.com/fcm/send/dyWfN6MMiQA:APA91bEFmp_j0-AnoNn3Fs7fB8B2U0J3k4-5foPrvDiuHFyGDkQ708mM4Qoyoaxi7rpJpvQNJGa5tRAVE3Rz3-1IbdaiD-m1OVP9yz0SGyl1ld8wRbD273v_f609F9YYV458J44M8NBK',
+  expirationTime: null,
+  keys: { 
+    p256dh: 'BPEIfD7bRMcgAM3oaCFv1FrCN7g0qrPN0JZccvQbhge-jPG0eVHs6nj-zFnM7Vr5dwDHkYuJeaxeb-C1zw97uXs=',
+    auth: '0zSu530Pw4DxKa4INntSow==' }
+}
+
+
+
+app.set('views',path.join(__dirname, 'views')) // was 'views'
+app.engine('handlebars', exphbs({defaultLayout: 'main'}))
+app.set('view engine','handlebars')
+
 
 //app.use(bodyParser.json());
 //app.use(bodyParser.urlencoded({ extended: false }) );
@@ -77,8 +99,8 @@ io.sockets.on('connection', socket =>{
   
   
   
-  //console.log('connection', socket.client)
-  //console.log('glob connection', Glob_socket.handshake)
+  //console.log('connection', socket.client) //console.log('glob connection', Glob_socket.handshake)
+  
   console.log('connection', socket.handshake.query.room, socket.handshake.query)
   const socRoom = socket.handshake.query.room
   socket.join(socRoom)
@@ -102,6 +124,11 @@ io.sockets.on('connection', socket =>{
       
         //Glob_socket.emit('msg', result)
         io.sockets.in(result.room).emit('msg', result);
+      
+        webpush.sendNotification(
+            pushSubscription,
+            JSON.stringify(result)
+        )
         // io.sockets.in('some other room').emit('hi');
         // versus: socket.broadcast.to('a room').send('im here');
       
@@ -138,8 +165,7 @@ io.sockets.on('connection', socket =>{
   }) 
   
   Glob_socket.on('disconnect', (ev) =>{
-    
-    console.log('disconnected', ev ) 
+      console.log('disconnected', ev ) 
   })
 }) 
 
@@ -148,7 +174,7 @@ io.sockets.on('connection', socket =>{
 
 
 app.get("/", (req, res) =>{
-  console.log('/', req.session)
+  //console.log('/', req.session)
   if (!req.session._id)   res.sendFile(__dirname + '/app/login.html'); //res.redirect('/login')
   //res.sendFile(__dirname + '/app/login.html');
   else   
@@ -163,7 +189,11 @@ app.get("/service-worker.js", (req, res) =>{
 })*/
 app.get("/bot", (req, res) =>{
     console.log('/bot')
-    res.end('in progress')
+    res.render('layouts/main.handlebars',{content: 'this is server test content', data:[1,2,3]})
+    /*res.render('layouts/userContent.handlebars', {
+          tags:tags 
+    })*/
+    //res.end('in progress')
 })
 
 
@@ -199,7 +229,19 @@ app.post('/api/login', jsonParser, (req,res)=>{
 }) 
 
 
-
+app.post('/api/subscribe', checkAccess, jsonParser, (req,res)=>{
+    console.log('subscribe', req.session, req.body)
+  
+    if (req.body) pushSubscription = req.body
+  
+    /*const payload = JSON.stringify({title: "hi from myChat", whatever: 11})
+    
+    webpush.sendNotification(
+        pushSubscription, //req.body, // subscription,
+        payload
+    )*/
+    
+})
 
 app.get ('/pub',(req,res)=>{
     res.sendFile(__dirname + '/app/index.html');

@@ -12,7 +12,8 @@ const Rooms = require('./components/Rooms'),
       Chat  = require('./components/Chat'),
       Blocker  = require('./components/helpers').Blocker,
       Warning = require('./components/helpers').Warning
-const applicationServerPublicKey = 'BBQo8bUp_agq-VSYI1wNBiCQ_S25FwhWw7r6d5hcbk-X50ppZCgT48tSOlzt-QVJydwLUHA32syLT4GRQj2hbrw'
+
+const applicationServerPublicKey = 'BF56pZXovwEOAn0eCrYXe8kj3LKL7HYWjfzpn2fqGUYBOne_R1KjJKSc_aQtlsqp3Tv2ZWj5ZVEw1wMPWt3jy3w'
 //console.log(Warning)
 
 let socket;
@@ -59,16 +60,23 @@ class Input extends React.Component{
     }
   }
   submitHandler(ev){
-    // input validation
+
         if (ev) ev.preventDefault()
     
-        if(!this.state.inputVal) return;// alert('need input')
+        if(!this.state.inputVal) return this.setState({inputVal: '' });// alert('need input')
+    
+        // dont allow userName over 10 chars
         if (this.props.type=="userName" && this.state.inputVal.toString().length>10)
             return alert('too long name, must be under 10 characters')
 
-        else if (this.props.type=="msg" && this.state.inputVal.toString().length>400)
-            return alert('too long message, 400 characters is max') 
-    //
+        // dont allow input over limit (160 / 750)
+        else if (this.props.type=="msg"){
+          const limit = (this.props.room == 'bot' || this.props.room == 'pub') ? 160 : 750
+          
+          if (this.state.inputVal.toString().length > limit)
+            return alert(`too long message, ${limit} characters is max`)
+        }
+    
     
     this.props.inputHandler(this.state.inputVal)
     this.setState({inputVal: '' })
@@ -203,11 +211,13 @@ class App extends React.Component{
       //Push.Permission.request(onGranted, onDenied);
       //if (!Push.Permission.has())  Push.Permission.request()
     
-      window.addEventListener("message", receivePostMessage, false);
-      registerServiceWorker()
+      window.addEventListener("message", receivePostMessage, false); // used when? wth SSE? or window.post?
+    
+      if (this.state.userName) registerServiceWorker()
   }
   
   userNameHandler(string){
+    //if (this.state.activeRoom) 
     localStorage.setItem('userName', string)
     this.setState({userName: string, loggedIn: true})//, promptUserName: false})
   }
@@ -385,7 +395,7 @@ function refreshSocketListeners(){
   
       //  https://socket.io/docs/client-api/#event-connect
   
-      console.log('refreshing socket:', window.socket)
+      //console.log('refreshing socket:', window.socket)
       // Push.create('Hello World!')
       /* Push.create('Hello world!', {
           body: 'How\'s it hangin\'?',
@@ -434,14 +444,14 @@ function refreshSocketListeners(){
                   return {messages: prev.messages, shouldScroll: true}
               })
               //Push.create('Hello World!')
-              spawnNotification(`~ ${msg.from} ~ wrote something`, `New msg in room ${msg.room.toUpperCase()}`)
+              //spawnNotification(`~ ${msg.from} ~ wrote something`, `New msg in room ${msg.room.toUpperCase()}`)
             
           } else spawnNotification( `~ ${msg.from} ~ wrote something`, `New msg in room ${msg.room.toUpperCase()}`)
       })
     
     
       window.socket.on('broadcast', msg =>{
-          console.log('socket broadcast', msg)
+          console.log('socket broadcast event', msg)
           //return alert('BC')
       })
 }
@@ -478,30 +488,73 @@ function sendFileToServer(fileBuffer, fileName, fileType, roomName, userName){
 
 function registerServiceWorker(){
       //return;
-      if ('serviceWorker' in navigator)
+      if ('serviceWorker' in navigator){
             
             navigator.serviceWorker
             .register('/service-worker.js')
             .then(reg =>{
-                     console.log('Service Worker registered', reg)
-                     window.swRegistration = reg;
+                     //console.log('Service Worker registered', reg)
+                  window.swRegistration = reg;
               
+                  
+                
              }).then(()=>{
-                console.log('wreg',window.swRegistration)
-                return window.swRegistration.pushManager.getSubscription()
-              
-            }).then(subscription=> {
+                console.log('Service Worker registered', window.swRegistration)
+                return window.swRegistration.pushManager.getSubscription()  
+            })
+            .then(subscription=> {
                 console.log('subscr', subscription)
                 window.isSubscribed = !(subscription === null);
 
-                if (window.isSubscribed) console.log('User IS subscribed.')
-                else { 
+                if (window.isSubscribed){
+                    console.log('User IS subscribed.')
+                    fetch('/api/subscribe',{
+                      method: 'POST',
+                      credentials: 'include',
+                      headers: {
+                        'content-type': 'application/json'
+                      },
+                      body: JSON.stringify(subscription)
+                    })
+                  
+                } else { 
                   console.log('User is NOT subscribed.')
                   subscribeUser()
                 }
                   
 
             })
+      
+            
+          navigator.serviceWorker.addEventListener('message', event => {
+                console.log('msg from SW 1', typeof event.data.msg, event.data.msg, '\n\n',event.data.url);
+                //navigator.serviceWorker.controller.postMessage('THIS IS CRAZY');
+                if (event.data.url !== 'https://snapdrop.glitch.me') return console.error('msg not ok from', event.data.url)
+            
+            
+                // looking for  "userName", "lastRoom"
+                const msg = JSON.parse(event.data.msg),
+                      keys = msg.get
+                keys.forEach(key=>{
+                    msg[key] = localStorage.getItem(key) 
+                }) 
+                //if (key !== 'userName') return console.error('not msg for username', key);
+                
+            
+                //reply = localStorage.getItem(key)
+                //if (!reply) return console.log('no reply');
+            
+                //msg[key] = reply
+                //console.log('   reply',reply, typeof reply)
+                navigator.serviceWorker.controller.postMessage(
+                    JSON.stringify(
+                        msg
+                        //{[event.data.msg]: reply}
+                    ) 
+                );
+            
+          })
+      }
 }
 
 
@@ -527,6 +580,7 @@ function subscribeUser() {
     //updateBtn();
   });
 }
+
 
 function urlB64ToUint8Array(base64String) {
   const padding = '='.repeat((4 - base64String.length % 4) % 4);
@@ -556,8 +610,9 @@ function spawnNotification(title = 'check the chat', body='new notif'){
 
 function receivePostMessage(ev){
     // https://developer.mozilla.org/en-US/docs/Web/API/Window/postMessage
-
-    if (!ev.origin.startsWith('https://snapdrop.glitch.me')) return;
+    console.error('received PostMessage')
   
-    console.log('msg event', ev.origin)
+    if (!ev.origin.startsWith('https://snapdrop.glitch.me')) return console.log('msg event', ev);
+  
+    console.error('msg event', ev.origin, '\n', ev)
 }
