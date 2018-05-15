@@ -87,6 +87,7 @@ self.addEventListener('message', e =>{
   
     const msg = JSON.parse(e.data)  // or e.data.json()
     
+    console.log('notif', e)
     console.log(msg.userName, msg.fromUser, msg.fromRoomName, msg.lastRoom)
     console.log(msg.userName !== msg.fromUser, msg.fromRoomName!== msg.lastRoom)
   
@@ -94,12 +95,10 @@ self.addEventListener('message', e =>{
     if (msg.userName !== msg.fromUser){
       const options = {  //`room: ${msg.fromRoomName}`, 
                       //body: `${msg.fromUser} wrote something`,
-                      icon: 'https://cdn.glitch.com/a2eec912-3cca-419e-908b-6e26f3a8dee3%2Fhand128.png?1526414438634'
-                      //'https://cdn.glitch.com/a2eec912-3cca-419e-908b-6e26f3a8dee3%2Fhand-small.png?1525434374837'
-                      //,badge:'https://cdn.glitch.com/a2eec912-3cca-419e-908b-6e26f3a8dee3%2Fhand-small.png?1525434374837' 
-                      , badge: 'https://cdn.glitch.com/a2eec912-3cca-419e-908b-6e26f3a8dee3%2FM1.png?1526421180346'
-                      , sound: 'https://cdn.glitch.com/a2eec912-3cca-419e-908b-6e26f3a8dee3%2Fwoodblock_cool.mp3?1526420551633'
-                      ,actions: [
+                      icon: 'https://cdn.glitch.com/a2eec912-3cca-419e-908b-6e26f3a8dee3%2Fhand128.png?1526414438634',
+                      badge: 'https://cdn.glitch.com/a2eec912-3cca-419e-908b-6e26f3a8dee3%2FM1.png?1526421180346',
+                      sound: 'https://cdn.glitch.com/a2eec912-3cca-419e-908b-6e26f3a8dee3%2Fwoodblock_cool.mp3?1526420551633',
+                      actions: [
                         { action: 'open',
                           title: 'Show me'
                         },{ action: 'close',
@@ -177,39 +176,42 @@ self.addEventListener('fetch', e =>{
     //console.log('sw', e.request.url)
   
     if (e.request.url.match('^.*(\/api\/|\/socket.io\/|\/public\/).*$')) {
-        //console.log('API request', e.request.url)
+        console.log('API request', e.request.url)
         return false
       
     } else {
       // not API request
-    }
-  
-    /*e.respondWith(
-               fromNetwork(e.request.url, 400)
-               .catch(() => fromCache(e.request))
-     );
-  
-  
-    function fromNetwork(request, timeout) {
-          return new Promise((resolve, reject)=>{
+    
+      console.log('not api', e.request.url)
+      
+      /*e.respondWith(
+                 fromNetwork(e.request.url, 1000)
+                 //.catch(() => fromCache(e.request))
+      );*/
 
-               const timeoutId = setTimeout(reject, timeout);
-                
-               fetch(request)
-               .then(response => {
-                    clearTimeout(timeoutId);
-                    resolve(response);
-               }, reject);
-          });
-     }
-  
-    function fromCache(request) {
-          return caches.open(shellName)
-               .then( cache =>{
-                    return cache.match(request)
-                              .then(matching => {
-                                   return matching || Promise.reject('no-match');
-                              });
-          });
-     }   */  
+
+      function fromNetwork(request, timeout) {
+            return new Promise((resolve, reject)=>{
+
+                 const timeoutId = setTimeout(reject, timeout);
+
+                 fetch(request)
+                 .then(response => {
+                      clearTimeout(timeoutId);
+                      resolve(response);
+                 }, reject);
+            });
+       }
+
+      function fromCache(request) {
+            return caches.open(shellName)
+                 .then( cache =>{
+                      return cache.match(request)
+                                .then(matching => {
+                                     return matching || Promise.reject('no-match');
+                                });
+            });
+       } 
+      
+    }
 });

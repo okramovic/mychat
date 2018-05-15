@@ -36,6 +36,14 @@ app.set('view engine','handlebars')
 
 //app.use(bodyParser.json());
 //app.use(bodyParser.urlencoded({ extended: false }) );
+app.get('/manifest.json', (req,res)=>{
+    //console.log('get mainfest ')
+    res.sendFile(__dirname + '/manifest.json');
+})
+app.get('/index.html', (req,res)=>{
+    //console.log('get public/index.html')
+    res.redirect('/');
+})
 app.use('/public',express.static('public'));
 app.use(session({
       secret: process.env.sessionSecret,
