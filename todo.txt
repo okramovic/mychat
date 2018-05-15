@@ -26,6 +26,20 @@ https://www.cronj.com/blog/browser-push-notifications-using-javascript/
     who sees push
       who is not having window focused (WindowClient.focused == false)
 
+
+    sending msg fromm SW to page
+      https://developer.mozilla.org/en-US/docs/Web/API/Client/postMessage
+      https://developer.mozilla.org/en-US/docs/Web/API/Client
+      https://developer.mozilla.org/en-US/docs/Web/API/WindowClient
+      http://craig-russell.co.uk/2016/01/29/service-worker-messaging.html#.Wvr3_NNuZE4
+
+
+
+add actions to push notifs
+    https://developers.google.com/web/fundamentals/push-notifications/notification-behaviour
+
+
+
 improve to whom server-socket sends new messages
 https://github.com/jgonera/socket.io-multichat/blob/master/app.js
 http://www.psitsmike.com/2011/10/node-js-and-socket-io-multiroom-chat-tutorial/

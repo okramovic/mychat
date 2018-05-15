@@ -26,13 +26,6 @@ const jsonParser = bodyParser.json()
 // stuff for push notifs
 webpush.setVapidDetails('mailto:okram@protonmail.ch', process.env.vapidPublic, process.env.vapidPrivate)
 
-let pushSubscription = { 
-  endpoint: 'https://fcm.googleapis.com/fcm/send/dyWfN6MMiQA:APA91bEFmp_j0-AnoNn3Fs7fB8B2U0J3k4-5foPrvDiuHFyGDkQ708mM4Qoyoaxi7rpJpvQNJGa5tRAVE3Rz3-1IbdaiD-m1OVP9yz0SGyl1ld8wRbD273v_f609F9YYV458J44M8NBK',
-  expirationTime: null,
-  keys: { 
-    p256dh: 'BPEIfD7bRMcgAM3oaCFv1FrCN7g0qrPN0JZccvQbhge-jPG0eVHs6nj-zFnM7Vr5dwDHkYuJeaxeb-C1zw97uXs=',
-    auth: '0zSu530Pw4DxKa4INntSow==' }
-}
 
 
 
@@ -125,10 +118,9 @@ io.sockets.on('connection', socket =>{
         //Glob_socket.emit('msg', result)
         io.sockets.in(result.room).emit('msg', result);
       
-        webpush.sendNotification(
-            pushSubscription,
-            JSON.stringify(result)
-        )
+        sendPushToAllSubs(result)
+        
+        
         // io.sockets.in('some other room').emit('hi');
         // versus: socket.broadcast.to('a room').send('im here');
       
@@ -171,6 +163,24 @@ io.sockets.on('connection', socket =>{
 
 
 
+function sendPushToAllSubs(msg){
+    fs.readFile(`pushsubs.json`, 'utf8', (err, file)=>{
+        if (err) throw err
+        else {
+          console.log('file ok')
+          const subs = JSON.parse(file)
+          
+          subs.allsubs.forEach(sub=>{
+                console.log('--- sub', subs.allsubs.length, sub.endpoint)
+            
+                webpush.sendNotification(
+                  sub,
+                  JSON.stringify(msg)
+                )
+          })
+        }
+    })
+}
 
 
 app.get("/", (req, res) =>{
@@ -230,17 +240,35 @@ app.post('/api/login', jsonParser, (req,res)=>{
 
 
 app.post('/api/subscribe', checkAccess, jsonParser, (req,res)=>{
-    console.log('subscribe', req.session, req.body)
+    console.log('subscribe', req.session, req.body.endpoint)
   
-    if (req.body) pushSubscription = req.body
+    res.sendStatus(200);
+  
+    // add new sub to file
+    fs.readFile(`pushsubs.json`, 'utf8', (err, file)=>{
+        if (err) throw err
+        else {
+          const subs = JSON.parse(file)
+          
+          if (subs.allsubs.find(sub=>sub.endpoint == req.body.endpoint) !== undefined ) return console.log('sub already there'); 
+          
+          
+          console.log('   this sub not there yet')
+          subs.allsubs.push( req.body )
+          
+          fs.writeFile(`pushsubs.json`, JSON.stringify(subs) , err =>{
+              if (err) throw err
+              else console.log('pushsubs updated')
+          })
+        }
+    })
   
     /*const payload = JSON.stringify({title: "hi from myChat", whatever: 11})
     
     webpush.sendNotification(
-        pushSubscription, //req.body, // subscription,
+        req.body, // subscription,
         payload
     )*/
-    
 })
 
 app.get ('/pub',(req,res)=>{
@@ -362,12 +390,13 @@ app.get('/logout', (req,res)=>{
 
 http.listen(3000, ()=>console.log('- - - - on port 3000 - - - -'))
 
+
+
 const validMsg = msg => {
   
     if (msg.room && msg.from && msg.text && msg.timeStamp) return true
     else return false
 }
-
 
 function addMsgToRoom(msg){
   return new Promise((resolve, reject)=>{
@@ -460,9 +489,7 @@ function delFile(path){
   //})
 }
 
-//sendToWit('which language do you like most?')
-//sendToWit('where are you from?')
-// 'what is the weather in London?'
+
 function sendToWit(text){
     return new Promise((resolve, reject)=>{
       

@@ -14,11 +14,10 @@ const Rooms = require('./components/Rooms'),
       Warning = require('./components/helpers').Warning
 
 const applicationServerPublicKey = 'BF56pZXovwEOAn0eCrYXe8kj3LKL7HYWjfzpn2fqGUYBOne_R1KjJKSc_aQtlsqp3Tv2ZWj5ZVEw1wMPWt3jy3w'
-//console.log(Warning)
 
 let socket;
 
-//alert('hi')
+
 /*socket.on('serverMsg', msg =>{
     console.log('serverMsg', msg)
 })*/
@@ -491,11 +490,15 @@ function registerServiceWorker(){
       if ('serviceWorker' in navigator){
             
             navigator.serviceWorker
-            .register('/service-worker.js')
+            .register('/service-worker.js') // {scope: '/somescope'}
             .then(reg =>{
                      //console.log('Service Worker registered', reg)
+                  //reg.update();
                   window.swRegistration = reg;
               
+                  reg.onupdatefound = function(x){
+                    console.log('SW update found', x)
+                  }
                   
                 
              }).then(()=>{
