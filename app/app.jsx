@@ -41,13 +41,17 @@ class Input extends React.Component{
   }
   textChangeHandler(ev){
     
-    const ww = (innerWidth * 0.55), 
-          lw = 11,//letterwidth
-          rows = Math.ceil( ev.target.value.toString().length * lw / ww )
+    const ww = (innerWidth * 0.55), // window width
+          lw = 11                    // letter width
+    let rows = Math.ceil( ev.target.value.toString().length * lw / ww )
+    
     //console.log('width', ww, 'rows',rows)
+    if (rows < 1)  rows=1
+    else if (rows>5) rows = 5
+    
     this.setState({
             inputVal: ev.target.value, 
-            rows: rows < 1 ? 1 : rows
+            rows
     })
   }
   keyPressHandler(ev){
@@ -55,14 +59,14 @@ class Input extends React.Component{
     //console.log(ev, ev.shiftKey)
     if (ev.key == 'Enter' && !ev.shiftKey){
         //console.log('should submit form')
-        this.submitHandler()
+        this.submitHandler(ev)
     }
   }
   submitHandler(ev){
 
         if (ev) ev.preventDefault()
     
-        if(!this.state.inputVal) return this.setState({inputVal: '' });// alert('need input')
+        if(!this.state.inputVal) return;// this.setState({inputVal: '' });// alert('need input')
     
         // dont allow userName over 10 chars
         if (this.props.type=="userName" && this.state.inputVal.toString().length>10)
@@ -78,7 +82,10 @@ class Input extends React.Component{
     
     
     this.props.inputHandler(this.state.inputVal)
-    this.setState({inputVal: '' })
+    this.setState({inputVal: '', rows: 1 }, ()=>{
+        //console.log('rows>'+ this.state.inputVal + '<\n', this.state.rows)
+    })
+    
   }
   render(){
     //console.log('input display', this.props.display)
@@ -100,7 +107,8 @@ class Input extends React.Component{
             <div className="icon" onClick={()=>this.props.openFileForm()}>📁</div> 
             <textarea id="textInput" name="text" onChange={this.textChangeHandler} 
                    type="text" placeholder={"type here"} autoComplete="off" 
-                   cols="40" rows={this.state.rows} style={{height: this.state.rows*25*1.15 + 'px'}}
+                   cols="40" rows={this.state.rows} 
+                   style={{height: this.state.rows*25*1.15 + 'px'}}
                    value={this.state.inputVal} ></textarea>
             <input type="submit" disabled={this.state.inputVal===''} style={{display: this.props.fileReady ? 'none' : 'block' }}
                    onClick={this.submitHandler} value=" → " />
@@ -497,16 +505,16 @@ function registerServiceWorker(){
                   window.swRegistration = reg;
               
                   reg.onupdatefound = function(x){
-                    console.log('SW update found', x)
+                    //console.log('SW update found', x)
                   }
                   
                 
              }).then(()=>{
-                console.log('Service Worker registered', window.swRegistration)
+                //console.log('Service Worker registered', window.swRegistration)
                 return window.swRegistration.pushManager.getSubscription()  
             })
             .then(subscription=> {
-                console.log('subscr', subscription)
+                //console.log('subscr', subscription)
                 window.isSubscribed = !(subscription === null);
 
                 if (window.isSubscribed){

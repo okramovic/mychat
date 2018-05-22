@@ -1,8 +1,8 @@
-const shellName = "markoschat_v0.0.4",
+const shellName = "markoschat_v0.0.04",
      shellFiles = [
-  "/index.html",
-  "/dist/52e6306f9e66fd5a4b1fc7a3c41213b5.css",
-  "/dist/e6abc6390b18e55608b4011e95c4e1e9.js"
+  "/index.html"
+ // "/dist/52e6306f9e66fd5a4b1fc7a3c41213b5.css",
+ // "/dist/e6abc6390b18e55608b4011e95c4e1e9.js"
 ]
 
 /* update test 4 */
@@ -47,7 +47,7 @@ self.addEventListener('activate', e =>{
 self.addEventListener('push', e =>{
     
     const pushMsg = JSON.parse( e.data.text() )
-    console.log('pushMsg',pushMsg)
+    //console.log('pushMsg',pushMsg)
   
     
     e.waitUntil(
@@ -55,7 +55,7 @@ self.addEventListener('push', e =>{
             type: "window"
         })
         .then(clientList =>{
-            console.log('clientList', clientList)
+            //console.log('clientList', clientList)
             if (clientList.length==0) return;
 
             //if (clientList[0].focused == true) return console.log('client is focused, no push notif')
@@ -87,7 +87,7 @@ self.addEventListener('message', e =>{
   
     const msg = JSON.parse(e.data)  // or e.data.json()
     
-    console.log('notif', e)
+    //console.log('notif', e)
     console.log(msg.userName, msg.fromUser, msg.fromRoomName, msg.lastRoom)
     console.log(msg.userName !== msg.fromUser, msg.fromRoomName!== msg.lastRoom)
   
@@ -176,13 +176,13 @@ self.addEventListener('fetch', e =>{
     //console.log('sw', e.request.url)
   
     if (e.request.url.match('^.*(\/api\/|\/socket.io\/|\/public\/).*$')) {
-        console.log('API request', e.request.url)
+        //console.log('API request', e.request.url)
         return false
       
     } else {
       // not API request
     
-      console.log('not api', e.request.url)
+      //console.log('not api', e.request.url)
       
       /*e.respondWith(
                  fromNetwork(e.request.url, 1000)
