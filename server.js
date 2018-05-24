@@ -3,6 +3,7 @@
 const express = require('express'),
       app = express(),
       http = require('http').Server(app),
+      path = require('path'),
       fs = require('fs'),
       bodyParser = require('body-parser'),
       session = require('express-session'),
@@ -10,7 +11,10 @@ const express = require('express'),
       MongoStore = require('connect-mongo')(session),
       io = require('socket.io')(http),
       {Wit, log} = require('node-wit'),
-      fileUpload = require('express-fileupload')  //  https://www.npmjs.com/package/express-fileupload
+      fileUpload = require('express-fileupload'),  //  https://www.npmjs.com/package/express-fileupload
+      React = require('react'),
+      exphbs = require('express-handlebars'),
+      webpush = require('web-push')
 
 let Glob_socket;
 
@@ -19,8 +23,27 @@ const jsonParser = bodyParser.json()
 // const urlencodedParser = bodyParser.urlencoded({ extended: false })
 // app.use(bodyParser.text({ type: 'text/html' }))
 
+// stuff for push notifs
+webpush.setVapidDetails('mailto:okram@protonmail.ch', process.env.vapidPublic, process.env.vapidPrivate)
+
+
+
+
+app.set('views',path.join(__dirname, 'views')) // was 'views'
+app.engine('handlebars', exphbs({defaultLayout: 'main'}))
+app.set('view engine','handlebars')
+
+
 //app.use(bodyParser.json());
 //app.use(bodyParser.urlencoded({ extended: false }) );
+app.get('/manifest.json', (req,res)=>{
+    //console.log('get mainfest ')
+    res.sendFile(__dirname + '/manifest.json');
+})
+app.get('/index.html', (req,res)=>{
+    //console.log('get public/index.html')
+    res.redirect('/');
+})
 app.use('/public',express.static('public'));
 app.use(session({
       secret: process.env.sessionSecret,
@@ -77,8 +100,8 @@ io.sockets.on('connection', socket =>{
   
   
   
-  //console.log('connection', socket.client)
-  //console.log('glob connection', Glob_socket.handshake)
+  //console.log('connection', socket.client) //console.log('glob connection', Glob_socket.handshake)
+  
   console.log('connection', socket.handshake.query.room, socket.handshake.query)
   const socRoom = socket.handshake.query.room
   socket.join(socRoom)
@@ -102,6 +125,10 @@ io.sockets.on('connection', socket =>{
       
         //Glob_socket.emit('msg', result)
         io.sockets.in(result.room).emit('msg', result);
+      
+        sendPushToAllSubs(result)
+        
+        
         // io.sockets.in('some other room').emit('hi');
         // versus: socket.broadcast.to('a room').send('im here');
       
@@ -138,17 +165,34 @@ io.sockets.on('connection', socket =>{
   }) 
   
   Glob_socket.on('disconnect', (ev) =>{
-    
-    console.log('disconnected', ev ) 
+      console.log('disconnected', ev ) 
   })
 }) 
 
 
 
+function sendPushToAllSubs(msg){
+    fs.readFile(`pushsubs.json`, 'utf8', (err, file)=>{
+        if (err) throw err
+        else {
+          console.log('file ok')
+          const subs = JSON.parse(file)
+          
+          subs.allsubs.forEach(sub=>{
+                console.log('--- sub', subs.allsubs.length, sub.endpoint)
+            
+                webpush.sendNotification(
+                  sub,
+                  JSON.stringify(msg)
+                )
+          })
+        }
+    })
+}
 
 
 app.get("/", (req, res) =>{
-  console.log('/', req.session)
+  //console.log('/', req.session)
   if (!req.session._id)   res.sendFile(__dirname + '/app/login.html'); //res.redirect('/login')
   //res.sendFile(__dirname + '/app/login.html');
   else   
@@ -163,7 +207,11 @@ app.get("/service-worker.js", (req, res) =>{
 })*/
 app.get("/bot", (req, res) =>{
     console.log('/bot')
-    res.end('in progress')
+    res.render('layouts/main.handlebars',{content: 'this is server test content', data:[1,2,3]})
+    /*res.render('layouts/userContent.handlebars', {
+          tags:tags 
+    })*/
+    //res.end('in progress')
 })
 
 
@@ -199,7 +247,37 @@ app.post('/api/login', jsonParser, (req,res)=>{
 }) 
 
 
-
+app.post('/api/subscribe', checkAccess, jsonParser, (req,res)=>{
+    console.log('subscribe', req.session, req.body.endpoint)
+  
+    res.sendStatus(200);
+  
+    // add new sub to file
+    fs.readFile(`pushsubs.json`, 'utf8', (err, file)=>{
+        if (err) throw err
+        else {
+          const subs = JSON.parse(file)
+          
+          if (subs.allsubs.find(sub=>sub.endpoint == req.body.endpoint) !== undefined ) return console.log('sub already there'); 
+          
+          
+          console.log('   this sub not there yet')
+          subs.allsubs.push( req.body )
+          
+          fs.writeFile(`pushsubs.json`, JSON.stringify(subs) , err =>{
+              if (err) throw err
+              else console.log('pushsubs updated')
+          })
+        }
+    })
+  
+    /*const payload = JSON.stringify({title: "hi from myChat", whatever: 11})
+    
+    webpush.sendNotification(
+        req.body, // subscription,
+        payload
+    )*/
+})
 
 app.get ('/pub',(req,res)=>{
     res.sendFile(__dirname + '/app/index.html');
@@ -320,12 +398,13 @@ app.get('/logout', (req,res)=>{
 
 http.listen(3000, ()=>console.log('- - - - on port 3000 - - - -'))
 
+
+
 const validMsg = msg => {
   
     if (msg.room && msg.from && msg.text && msg.timeStamp) return true
     else return false
 }
-
 
 function addMsgToRoom(msg){
   return new Promise((resolve, reject)=>{
@@ -418,9 +497,7 @@ function delFile(path){
   //})
 }
 
-//sendToWit('which language do you like most?')
-//sendToWit('where are you from?')
-// 'what is the weather in London?'
+
 function sendToWit(text){
     return new Promise((resolve, reject)=>{
       

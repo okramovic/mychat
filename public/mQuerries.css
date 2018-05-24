@@ -5,12 +5,18 @@
   input[type="file"]{
     max-width: 150px;
   }
+  #roomsRow {
+    padding: 0.5em 0.15em;
+  }
+  #roomsRow > .roomButton{
+    margin: 0 0.2em;
+  }
 }
 @media (min-width: 600px) {
   
-  #roomsRow {
-     justify-content: center;
-  }
+  /*-#roomsRow {
+     -justify-content: center;
+  }*/
 }
 @media (min-width: 800px) {
   #chatContainer{

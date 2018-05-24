@@ -2,7 +2,7 @@ const React = require('react')
 
 const urlExp  = /(https?:\/\/)?(\w+\.)?\w+\.\w+(\/\S+)?/g,
       httpExp = /https?:\/\//,
-      singleURL  = /\b(https?:\/\/)?(\w+\.)?(\w+\.\w+)(\/)?(\S+)?/,  // /\b(https?:\/\/)?(\w+\.)?(\w+\.\w+)(\/\S+)?\b/,
+      singleURL  = /\b(?:https?:\/\/)?(?:\w+\.)?(?:\S+\.\w+)(?:\/)?(?:\S+)?/, ///\b(https?:\/\/)?(\w+\.)?(\w+\.\w+)(\/)?(\S+)?/,  // /\b(https?:\/\/)?(\w+\.)?(\w+\.\w+)(\/\S+)?\b/,
       justImgExp  = /^\S+\/\S+(.jpg|.jpeg|.png|.bmp|.gif)$/,
       imgExp = /\b\S+\/\S+(.jpg|.jpeg|.png|.bmp|.gif)/
 
