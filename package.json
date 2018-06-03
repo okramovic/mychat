@@ -2,16 +2,16 @@
   "name": "markos-chat",
   "version": "0.0.1",
   "description": "my chat app + bot maybe",
-  "main": "server.js",
+  "main": "index.js",
   "scripts": {
-    "build": "webpack",
-    "start": "webpack && node server.js"
+    "start": "webpack && node server2.js"
   },
   "dependencies": {
     "express": "^4.16.3",
     "jsx-loader": "^0.13.2",
     "react": "^16.2.0",
     "react-dom": "^16.2.0",
+    "react-router-dom": "^4.2.0",
     "webpack": "^4.1.1",
     "webpack-cli": "^2.0.12",
     "socket.io": "^2.1.0",
@@ -22,7 +22,25 @@
     "node-wit": "^5.0.0",
     "express-fileupload": "^0.4.0",
     "express-handlebars": "^3.0.0",
-    "web-push": "^3.3.1"
+    "web-push": "^3.3.1",
+    "serialize-javascript": "^1.4.0"
+  },
+  "babel": {
+    "presets": [
+      "env",
+      "react"
+    ],
+    "plugins": [
+      "transform-object-rest-spread"
+    ]
+  },
+  "devDependencies":{
+    "babel-core": "^6.26.0",
+    "babel-loader": "^7.1.2",
+    "babel-plugin-transform-object-rest-spread": "^6.26.0",
+    "babel-preset-env": "^1.6.1",
+    "babel-preset-react": "^6.24.1",
+    "webpack-node-externals": "^1.6.0"
   },
   "engines": {
     "node": "8.x"
@@ -33,7 +51,6 @@
   "license": "MIT",
   "keywords": [
     "node",
-    "glitch",
     "express",
     "react"
   ]

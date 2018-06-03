@@ -1,9 +1,13 @@
-in watch.json
-  in include was also
-  "\\.js$",
-
 
 react on server tut
+  THIS ONE WORKS for me
+  https://tylermcginnis.com/react-router-server-rendering/
+  
+  phoebe
+    https://codeburst.io/headache-free-ssr-react-js-node-js-and-es6-app-boilerplate-tutorial-267f7be0b7b5
+    https://medium.com/@phoebe.greig/headache-free-isomorphic-app-tutorial-react-js-react-router-node-js-ssr-with-state-and-es6-797a8d8e493a
+
+
 extended intro 
     https://www.smashingmagazine.com/2016/03/server-side-rendering-react-node-express/
 https://scotch.io/tutorials/react-on-the-server-for-beginners-build-a-universal-react-and-node-app
@@ -40,14 +44,6 @@ https://www.cronj.com/blog/browser-push-notifications-using-javascript/
 
 
 
-add actions to push notifs
-    https://developers.google.com/web/fundamentals/push-notifications/notification-behaviour
-
-
-
-improve to whom server-socket sends new messages
-https://github.com/jgonera/socket.io-multichat/blob/master/app.js
-http://www.psitsmike.com/2011/10/node-js-and-socket-io-multiroom-chat-tutorial/
 
 
 render chatrooms on server 
@@ -55,6 +51,10 @@ render chatrooms on server
     - to save memory in browser (all those fetched files when changing rooms) ?
 
 
+- is there way to detect type of connection user is using? (if on cellular data, dont load pictures to save data)
+  too early in june 2018, but lights on horizon
+  https://developer.mozilla.org/en-US/docs/Web/API/Navigator/connection
+  
 
 add: componentWillUnmount: function () {
     socket.removeListener('data', this.handleData);
@@ -82,8 +82,16 @@ done
 - add sending files
 - re-add send msg on Enter, shift+enter makes new line
 - on sockets: added disconnect and error (etc) event listeners on client
+- improve to whom server-socket sends new messages
+    https://github.com/jgonera/socket.io-multichat/blob/master/app.js
+    http://www.psitsmike.com/2011/10/node-js-and-socket-io-multiroom-chat-tutorial/
 
-
+- add actions to push notifs
+    https://developers.google.com/web/fundamentals/push-notifications/notification-behaviour
+- dont load all messages at once, do it like fb - load only 10-15 last
+- add autodelete of sent files after 48 hours
+- divide mesages into groups by date sent (so they are optically more separated)
+- add listening for scroll event (to load new msgs) instead of button
 
 - - - - - - - - - - - - - - - - - - - - - - - -
 notifs

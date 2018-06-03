@@ -1,19 +1,23 @@
 'use strict'
 
-const React = require('react');
-const ReactDOM = require('react-dom');
+//const React = require('react');
+//const ReactDOM = require('react-dom');
+import React, { Component } from 'react';
 
-const main = document.getElementById('main'),
-      appDiv = document.getElementById('app')
+//const main = document.getElementById('main'),
+      //appDiv = document.getElementById('app');
 
 
 
-const Rooms = require('./components/Rooms'),
+/*const Rooms = require('./components/Rooms'),
       Chat  = require('./components/Chat'),
       Blocker  = require('./components/helpers').Blocker,
-      Warning = require('./components/helpers').Warning
+      Warning = require('./components/helpers').Warning*/
 
-const applicationServerPublicKey = 'BF56pZXovwEOAn0eCrYXe8kj3LKL7HYWjfzpn2fqGUYBOne_R1KjJKSc_aQtlsqp3Tv2ZWj5ZVEw1wMPWt3jy3w'
+//import FileUploadForm from './components/fileUploadForm';
+//import Input from './components/input';
+
+const applicationServerPublicKey = 'BF56pZXovwEOAn0eCrYXe8kj3LKL7HYWjfzpn2fqGUYBOne_R1KjJKSc_aQtlsqp3Tv2ZWj5ZVEw1wMPWt3jy3w';
 
 let socket;
 
@@ -36,143 +40,15 @@ let socket;
 //ReactDOM.render(<Test />, document.querySelector('#app'))
 
 
-class Input extends React.Component{
-  constructor(props){
-    super(props)
-    //this.clickHandler = this.clickHandler.bind(this)
-    this.textChangeHandler = this.textChangeHandler.bind(this)
-    this.submitHandler = this.submitHandler.bind(this)
-    this.keyPressHandler = this.keyPressHandler.bind(this)
-    
-    this.state={
-      type: this.props.type,
-      inputVal : '',
-      rows: this.props.type=='msg'? 1 : null
-    }
-  }
-  textChangeHandler(ev){
-    
-    const ww = (innerWidth * 0.55), // window width
-          lw = 11                    // letter width
-    let rows = Math.ceil( ev.target.value.toString().length * lw / ww )
-    
-    //console.log('width', ww, 'rows',rows)
-    if (rows < 1)  rows=1
-    else if (rows>5) rows = 5
-    
-    this.setState({
-            inputVal: ev.target.value, 
-            rows
-    })
-  }
-  keyPressHandler(ev){
-    //console.log('keypressed', ev.key, ev.target)
-    //console.log(ev, ev.shiftKey)
-    if (ev.key == 'Enter' && !ev.shiftKey){
-        //console.log('should submit form')
-        this.submitHandler(ev)
-    }
-  }
-  submitHandler(ev){
-
-        if (ev) ev.preventDefault()
-    
-        if(!this.state.inputVal) return;// this.setState({inputVal: '' });// alert('need input')
-    
-        // dont allow userName over 10 chars
-        if (this.props.type=="userName" && this.state.inputVal.toString().length>10)
-            return alert('too long name, must be under 10 characters')
-
-        // dont allow input over limit (160 / 750)
-        else if (this.props.type=="msg"){
-          const limit = (this.props.room == 'bot' || this.props.room == 'pub') ? 160 : 750
-          
-          if (this.state.inputVal.toString().length > limit)
-            return alert(`too long message, ${limit} characters is max`)
-        }
-    
-    
-    this.props.inputHandler(this.state.inputVal)
-    this.setState({inputVal: '', rows: 1 }, ()=>{
-        //console.log('rows>'+ this.state.inputVal + '<\n', this.state.rows)
-    })
-    
-  }
-  render(){
-    //console.log('input display', this.props.display)
-    if (this.props.display=== false) return null
-    
-    if (this.props.type==="msg" && this.props.loggedIn){
-      
-        const className = this.props.loggedIn ? "bottom flex around" : "hidden"
-        // <div className="userName">{this.props.user}:</div>
-        // form attr onSubmit={this.submitHandler}
-        //  action="/api/uploadFile" method='post'  encType="multipart/form-data"
-        //  <input type="file" onChange={(ev)=>this.props.fileHandler(ev)} style={{display: this.props.room=='me' ? 'block' : 'none'}}/>
-        // <input type="submit" style={{display: this.props.fileReady ? 'block' : 'none' }} value="file!" />
-        return(
-          <form id="input" className={className}  onKeyPress={this.keyPressHandler}
-                style={{height: (this.state.rows*25 + 20)*1.3 + 'px',
-                       bottom: this.props.makeBottomSpace? '60px' : '0' }}>
-            
-            <div className="icon" onClick={()=>this.props.openFileForm()}>📁</div> 
-            <textarea id="textInput" name="text" onChange={this.textChangeHandler} 
-                   type="text" placeholder={"type here"} autoComplete="off" 
-                   cols="40" rows={this.state.rows} 
-                   style={{height: this.state.rows*25*1.15 + 'px'}}
-                   value={this.state.inputVal} ></textarea>
-            <input type="submit" disabled={this.state.inputVal===''} style={{display: this.props.fileReady ? 'none' : 'block' }}
-                   onClick={this.submitHandler} value=" → " />
-            
-          </form>
-          
-    )}     //  send file button   onClick={()=>this.props.uploadHandler()}
-
-    else if (this.props.type==="userName" && !this.props.loggedIn) {
-          
-        const className = this.props.loggedIn===false ? 'middle flex around' : 'hidden'
-        return(
-        <form id="input" className={className} onSubmit={this.submitHandler}>
-          <input id="textInput" name="text" onChange={this.textChangeHandler} 
-                 type="text" placeholder="whats your name?" autoComplete="on"
-                 style={{textAlign: 'center'}}
-                 value={this.state.inputVal} />
-          <input type="submit" onClick={this.submitHandler} 
-                 disabled={this.state.inputVal===''} value="&#8594;" />
-        </form>
-    )} else return null
-  }
-}
 
 
 
 
-class FileUploadForm extends React.Component{
-  constructor(props){
-    super(props)
-  }
-  render(){
-  return(
-    <div id="uploadFileForm" className="full flex evenly"
-         style={{display: this.props.display ? 'flex': 'none'}}>
-      
-      <form ref="some-random-text" onSubmit={ev=>this.props.fileSubmitHandler(ev)} 
-             className="full flex evenly"
-             style={{width:'100%'}}>
-             <div onClick={this.props.openFileForm} className="icon" style={{}}>←</div>
-             <input type="file" name="uploadFile" />
-             <input type="submit" value="Upload!" />
-      </form>
-      
-    </div>)
-  }// <div></div>
-  // action="http://snapdrop.glitch.me/api/uploadFile" method="post" enctype="multipart/form-data"
-}
 
 
 
-
-class App extends React.Component{
+class App extends Component{
+//class App extends React.Component{
   constructor(props){
     super(props)
     
@@ -193,8 +69,7 @@ class App extends React.Component{
     this.fileSubmitHandler = this.fileSubmitHandler.bind(this)
     this.displayWarning = this.displayWarning.bind(this)
     this.removeWarning = this.removeWarning.bind(this)
-    this.loadMoreMessages = this.loadMoreMessages.bind(this)
-    //this.switchScroll = this.switchScroll.bind(this)
+    
     //this.refreshSocketListeners = this.refreshSocketListeners.bind(this)
     
     
@@ -204,7 +79,7 @@ class App extends React.Component{
       userName:   userName || null,
       activeRoom: lastRoom || null,
       currentRoomStartDate: null,
-      messages: null,
+      messages: this.props.data || null,
       warning: null,
       socketConnected: null,
       shouldScroll: true,
@@ -220,9 +95,8 @@ class App extends React.Component{
     
   }
   componentDidMount(){
-      
       if (this.state.activeRoom) this.getRoomContent(this.state.activeRoom)
-
+                                 //refreshSocketListeners.call(this)
       //Push.Permission.request(onGranted, onDenied);
       //if (!Push.Permission.has())  Push.Permission.request()
     
@@ -230,7 +104,6 @@ class App extends React.Component{
     
       if (this.state.userName) registerServiceWorker()
   }
-
   userNameHandler(string){
     //if (this.state.activeRoom) 
     localStorage.setItem('userName', string)
@@ -305,20 +178,18 @@ class App extends React.Component{
         })
         .then(response=>{
           console.log(response) 
-          // hide file input
-          this.setState({showFileForm: !this.state.showFileForm})
+          //if (response.ok) location.pathname = '/'
+          //else console.error('not authorized')
+          
         })
   }
   getRoomContent(roomName){
-
+      //console.log('getRoomContent', roomName)
     
       fetch('/api/roomContent',{
               method: 'POST',
               credentials: 'include',
-              body: JSON.stringify({
-                        room: roomName
-                        //,lengthOfClientMessages: this.state.messages.length || 0
-              }),
+              body: JSON.stringify({room: roomName}),
               headers: new Headers({'content-type': 'application/json'})
       })
       .then(res =>{
@@ -356,60 +227,27 @@ class App extends React.Component{
           this.displayWarning('something went wrong...', null, false)
       })
   }
-  loadMoreMessages(){
-      
-      this.setState({msgLoadInProgress:true, shouldScroll:false }, ()=> console.log('getting more messages', this.state, '<') )
-    
-      fetch('/api/roomContent',{
-              method: 'POST',
-              credentials: 'include',
-              body: JSON.stringify({
-                      room: this.state.activeRoom, 
-                      lengthOfClientMessages: this.state.messages.length
-              }),
-              headers: new Headers({'content-type': 'application/json'})
-      })
-      .then(res=>res.json())
-      .then(resp =>{
-        console.log(resp)
-        this.setState((prevState, props)=>{
-          //console.log(prevState.messages)
-          const allMessages = prevState.messages
-          allMessages.unshift(...resp.chat)
-          
-          return {messages: allMessages, msgLoadInProgress: false}
-        })
-      })
-  }
-  /*switchScroll(shouldScroll){
-    //this func is probably not needed at all
-    //console.log('switchScroll', shouldScroll)
-    //this.setState({ shouldScroll })
-  }*/
-  displayWarning(msg = 'Sorry, something went wrong. Try again', hideMillis = 3500, hide = true){
-      this.setState({warning: msg, shouldScroll: false})
-      if (hide) setTimeout(()=>this.setState({warning: null}), hideMillis)
-  }
-  removeWarning(){
-      this.setState({warning: null, shouldScroll: true})
-  }
   
   
   render(){
-    const loggedIn = this.state.loggedIn  //(this.state.activeRoom && this.state.userName) ? true : false
+    /*const loggedIn = this.state.loggedIn  //(this.state.activeRoom && this.state.userName) ? true : false
     // style={{display: this.state.showFileForm == true ? 'block': 'none'}}
     const display = (this.state.showFileForm == true) ? 'block': 'none',
           roomOK = (this.state.activeRoom == 'me' || this.state.activeRoom == 'ku' || 
                     this.state.activeRoom == 'mak' || this.state.activeRoom == 'vlad' )
-    
-
-    return(
+    */
+    //console.log('display', display, this.state.showFileForm)
+    return(<div><h1>hoy</h1> {this.props.data.map((el,i)=>{
+              return (<div>
+                 <h3 key={i}>{el} it works i said</h3>
+               </div>
+              )
+        })}</div>)
+    /*return(
       <div id="app">
         <Rooms getRoomContent={this.getRoomContent} activeRoom={this.state.activeRoom} />
         <Chat  messages={this.state.messages} activeRoom={this.state.activeRoom}
-               loggedIn={this.state.loggedIn} 
-               scroll={this.state.shouldScroll} /*switchScroll={this.switchScroll}*/
-               loadMoreMessages={this.loadMoreMessages} msgLoadInProgress={this.state.msgLoadInProgress}
+               loggedIn={this.state.loggedIn} scroll={this.state.shouldScroll}
                started={this.state.currentRoomStartDate} loggedIn={this.state.loggedIn}/>
         
         <Input type="msg"  room={this.state.activeRoom} 
@@ -429,17 +267,24 @@ class App extends React.Component{
         <Blocker  display={!this.state.loggedIn} />
         <Warning text={this.state.warning}/>
       </div>
-  )}
-
+  )*/
+  }
+  /*displayWarning(msg = 'Sorry, something went wrong. Try again', hideMillis = 3500, hide = true){
+      this.setState({warning: msg, shouldScroll: false})
+      if (hide) setTimeout(()=>this.setState({warning: null}), hideMillis)
+  }
+  removeWarning(){
+      this.setState({warning: null, shouldScroll: true})
+  }*/
   
 }
 
 
+module.exports = App
 
 
 
-
-ReactDOM.render(<App />, appDiv)
+//ReactDOM.render(<App />, appDiv)
 
 
 function refreshSocketListeners(){

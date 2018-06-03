@@ -163,6 +163,9 @@ input[type="file"]{
 .evenly{
   justify-content: space-evenly;
 }
+.j_end{
+  justify-content: flex-end;
+}
 .overFlowHoriz{
   overflow-x: scroll;
 }
@@ -213,6 +216,14 @@ input[type="file"]{
 .alignCenter{
   text-align: center;
 }
+.loadMoreMessagesButton{
+  width: 160px;
+  margin: auto;
+}
+.loadMoreMessagesButton.white_border{
+  border: 2px solid white;
+  cursor: default;
+}
 #chatContainer{
   padding-top: 65px;
   /*display: flex;
@@ -224,8 +235,14 @@ input[type="file"]{
   display: flex;
   justify-content: center;
 }
+.dateEl{
+  color: rgb(190,190,190);
+  margin-top: .5em;
+}
+
 .chatMsg{
   font-size: 17px;
+  width: 100%;
   min-width: 200px;
   max-width: 92vw;
   margin: .3em auto .3em;

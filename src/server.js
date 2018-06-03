@@ -16,6 +16,16 @@ const express = require('express'),
       exphbs = require('express-handlebars'),
       webpush = require('web-push')
 
+const renderToString = require('react-dom/server').renderToString;
+const App = require(__dirname + '/../app/app2')
+      //_reactRouter = require('react-router'),
+      //match = _reactRouter.match
+      //{ match, RouterContext } = _reactRouter
+      
+import serialize from "serialize-javascript"
+
+
+
 let Glob_socket;
 
 const jsonParser = bodyParser.json()
@@ -41,7 +51,7 @@ app.get('/manifest.json', (req,res)=>{
     res.sendFile(__dirname + '/manifest.json');
 })
 app.get('/index.html', (req,res)=>{
-    //console.log('get public/index.html')
+    //console.log('get public/index.html');
     res.redirect('/');
 })
 app.use('/public',express.static('public'));
@@ -192,22 +202,43 @@ function sendPushToAllSubs(msg){
 
 
 app.get("/", (req, res) =>{
+  console.log(process.cwd(), path.join(__dirname, 'app/app/index.html'))
   //console.log('/', req.session)
-  if (!req.session._id)   res.sendFile(__dirname + '/app/login.html'); //res.redirect('/login')
+  if (!req.session._id)   res.sendFile(__dirname + '/app/app/login.html'); //res.redirect('/login')
   //res.sendFile(__dirname + '/app/login.html');
-  else   
-    res.sendFile(__dirname + '/app/index.html');
+  
+  else {     
+    //res.sendFile(__dirname + 'app/index.html');
+    res.sendFile(path.join(__dirname, 'app/app/index.html'));
+  }
 });
 app.get("/service-worker.js", (req, res) =>{
-    //console.log('SW', __dirname + '/service-worker.js')
-    res.sendFile(__dirname + '/service-worker.js')
+    res.sendFile(__dirname + 'app/service-worker.js')
 })
 /*app.get("/upload", (req, res) =>{
     res.sendFile(__dirname + '/app/upload.html');
 })*/
+
+
 app.get("/bot", (req, res) =>{
     console.log('/bot')
-    res.render('layouts/main.handlebars',{content: 'this is server test content', data:[1,2,3]})
+    const name = ["aaa","bbb","ccc", 'marko'] //"marko"
+    const markup = renderToString(
+      <App data={name} />
+    )
+    console.log(serialize(name) ) 
+    // <script src="/public/bundle.js" defer></script>
+    res.send(`
+      <!DOCTYPE html>
+      <head>
+        
+        <script>window.__INITIAL_DATA__ = ${serialize(name)}</script>
+      </head>
+      <body>
+        <h2>bot</h2>
+        <div id="app">${markup}</div>
+      </body>`)
+    //res.render('layouts/main.handlebars',{content: 'this is server test content', data:[1,2,3]})
     /*res.render('layouts/userContent.handlebars', {
           tags:tags 
     })*/
